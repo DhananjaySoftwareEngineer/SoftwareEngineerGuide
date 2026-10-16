@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Git Commands Every Developer Should Know</title>
+<style>
+:root{
+  --bg:#f4f5f7; --paper:#ffffff; --ink:#1b232b; --muted:#5d6b78; --line:#dce1e6;
+  --accent:#d2491f; --accent-soft:#fde9e2;
+  --code-bg:#121a22; --code-ink:#e1e9f0; --code-dim:#7f93a5; --code-prompt:#f0a15f; --code-ok:#8fd9a8; --code-bad:#f09690;
+  --ok:#1f7a4d; --ok-bg:#e0f3e8; --warn:#8f5700; --warn-bg:#fdf0d6; --bad:#b0302b; --bad-bg:#fbe4e2; --info:#1c5fb8; --info-bg:#e2ecfa;
+  --sans:"Inter Tight","Inter","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  --mono:"JetBrains Mono","Cascadia Code",Consolas,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1419; --paper:#171f27; --ink:#e7edf2; --muted:#93a3b1; --line:#2a3743;
+    --accent:#ff8a63; --accent-soft:#3a2118;
+    --ok:#6fd3a0; --ok-bg:#15301f; --warn:#f0c26a; --warn-bg:#392c10; --bad:#f09690; --bad-bg:#3c1d1b; --info:#7db2f4; --info-bg:#1a2d44;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1419; --paper:#171f27; --ink:#e7edf2; --muted:#93a3b1; --line:#2a3743;
+  --accent:#ff8a63; --accent-soft:#3a2118;
+  --ok:#6fd3a0; --ok-bg:#15301f; --warn:#f0c26a; --warn-bg:#392c10; --bad:#f09690; --bad-bg:#3c1d1b; --info:#7db2f4; --info-bg:#1a2d44;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.65}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{max-width:860px;margin:0 auto;padding:28px 20px 90px}
+
+.toolbar{display:flex;gap:10px;justify-content:flex-end;margin-bottom:18px}
+.btn{font:600 13px var(--sans);padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+
+.hero{background:var(--code-bg);color:var(--code-ink);border-radius:18px;padding:40px 36px 34px;margin-bottom:26px;position:relative;overflow:hidden}
+.hero .bar{display:flex;gap:7px;margin-bottom:22px}
+.hero .bar i{width:11px;height:11px;border-radius:50%;background:#3a4a58}
+.hero .bar i:nth-child(1){background:#ef6a5e}.hero .bar i:nth-child(2){background:#f4bf4f}.hero .bar i:nth-child(3){background:#61c554}
+.hero h1{font-size:clamp(2rem,5.5vw,3.3rem);line-height:1.05;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}
+.hero h1 .pr{color:var(--code-prompt);font-family:var(--mono);font-weight:600;margin-right:.3em}
+.hero p{margin:0 0 10px;color:#b7c5d1;font-size:1.08rem;max-width:620px}
+.hero .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.hero .meta span{font:600 12.5px var(--sans);padding:4px 11px;border-radius:99px;background:#223140;color:#cbd8e3}
+
+.toc{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:26px}
+.toc h2{font-size:1rem;margin:0 0 12px}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:6px 18px}
+.toc a{display:flex;gap:10px;align-items:baseline;text-decoration:none;color:var(--ink);padding:6px 8px;border-radius:7px;font-size:.95rem}
+.toc a:hover{background:var(--accent-soft)}
+.toc a b{font:700 12px var(--mono);color:var(--accent);min-width:1.6em}
+.toc a code{font-size:.85rem}
+
+section.card,article.cmd{background:var(--paper);border:1px solid var(--line);border-radius:16px;margin:0 0 24px;overflow:hidden}
+.pad{padding:26px 30px}
+.cmd header{display:flex;align-items:center;gap:16px;padding:20px 30px;background:var(--accent-soft);border-bottom:1px solid var(--line)}
+.cmd header .no{font:800 1.7rem var(--mono);color:var(--accent);line-height:1}
+.cmd header h2{margin:0;font:700 clamp(1.15rem,3.6vw,1.5rem) var(--mono);letter-spacing:-.01em;word-break:break-word}
+.cmd header p{margin:2px 0 0;color:var(--muted);font-size:.92rem}
+.cmd .body{padding:24px 30px 28px}
+h3{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:26px 0 10px}
+h3:first-child{margin-top:0}
+.card h2.sec{font-size:1.35rem;margin:0 0 6px;letter-spacing:-.01em}
+p{margin:0 0 1em}
+ul{padding-left:1.2em;margin:0 0 1em}
+li{margin:.3em 0}
+li::marker{color:var(--accent)}
+code{font-family:var(--mono);font-size:.84em;background:var(--accent-soft);color:var(--accent);padding:.1em .4em;border-radius:5px;word-break:break-word}
+
+pre{position:relative;background:var(--code-bg);color:var(--code-ink);padding:16px 18px;border-radius:10px;overflow-x:auto;font:13.5px/1.65 var(--mono);margin:0 0 1em}
+pre code{background:none;color:inherit;padding:0;font-size:inherit;word-break:normal}
+pre .pr{color:var(--code-prompt);user-select:none}
+pre .cm{color:var(--code-dim)}
+pre .ok{color:var(--code-ok)}
+pre .bad{color:var(--code-bad)}
+pre .o{color:#b9c7d3}
+.copy{position:absolute;top:8px;right:8px;font:600 11px var(--sans);padding:4px 9px;border-radius:6px;border:1px solid #33465a;background:#1c2833;color:#c4d2de;cursor:pointer}
+.copy:hover{background:#26384a}
+pre.has-copy{padding-top:34px}
+
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin:0 0 1em}
+table{border-collapse:collapse;width:100%;min-width:480px;font-size:.93rem}
+th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{background:var(--accent-soft);font-size:.8rem;letter-spacing:.03em}
+td:first-child{font-family:var(--mono);font-size:.84rem;font-weight:600;white-space:nowrap}
+td.y{color:var(--ok);font-weight:700}td.n{color:var(--bad);font-weight:700}
+td.c,th.c{text-align:center;font-family:var(--sans);white-space:normal}
+
+.note{border-radius:10px;padding:13px 16px;margin:1.1em 0;font-size:.95rem;line-height:1.55}
+.note b.t{display:block;font-size:.85rem;margin-bottom:2px}
+.note.tip{background:var(--info-bg)}.note.tip b.t{color:var(--info)}
+.note.warn{background:var(--warn-bg)}.note.warn b.t{color:var(--warn)}
+.note.danger{background:var(--bad-bg)}.note.danger b.t{color:var(--bad)}
+.note.ok{background:var(--ok-bg)}.note.ok b.t{color:var(--ok)}
+.note p:last-child,.note ul:last-child{margin-bottom:0}
+
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;margin:0 0 1em;font-size:.9rem}
+.flow .box{flex:1 1 130px;border:2px solid var(--line);border-radius:12px;padding:12px 10px;text-align:center;background:var(--paper)}
+.flow .box b{display:block;font-size:.95rem}
+.flow .box small{color:var(--muted)}
+.flow .box.a{border-color:#d9a441}.flow .box.b{border-color:#5b95e3}.flow .box.c{border-color:#52b788}.flow .box.d{border-color:var(--accent)}
+.flow .arr{flex:0 0 78px;display:flex;flex-direction:column;justify-content:center;align-items:center;font:700 12px var(--mono);color:var(--accent)}
+.flow .arr span{font-size:18px;line-height:1}
+.flow-back{display:flex;justify-content:flex-end;gap:16px;font:600 12px var(--mono);color:var(--muted);margin:-4px 0 1em}
+@media (max-width:720px){.flow{flex-direction:column}.flow .arr{flex:0 0 38px;flex-direction:row;gap:8px}.flow .arr span{transform:rotate(90deg)}}
+
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 1em}
+.vs>div{border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:.93rem}
+.vs h4{margin:0 0 6px;font-size:1rem}
+.vs pre{font-size:12px;margin:8px 0 0}
+@media (max-width:720px){.vs{grid-template-columns:1fr}.toc ol{grid-template-columns:1fr}.pad,.cmd .body{padding:20px 18px}.cmd header{padding:16px 18px}.hero{padding:30px 22px}}
+
+.pill{display:inline-block;font:700 11px var(--mono);padding:2px 8px;border-radius:99px;vertical-align:middle}
+.pill.safe{background:var(--ok-bg);color:var(--ok)}
+.pill.mid{background:var(--warn-bg);color:var(--warn)}
+.pill.risk{background:var(--bad-bg);color:var(--bad)}
+
+.linkedin textarea{width:100%;min-height:330px;font:15px/1.6 var(--sans);padding:16px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);resize:vertical}
+.linkedin .row{display:flex;gap:10px;align-items:center;margin:10px 0 0;flex-wrap:wrap}
+.status{font:600 13px var(--sans);color:var(--ok)}
+
+footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.92rem}
+
+@media print{
+  body{background:#fff;color:#000;font-size:11.5pt}
+  .toolbar,.copy,.linkedin{display:none}
+  .wrap{max-width:none;padding:0}
+  article.cmd,section.card{break-inside:avoid-page;box-shadow:none}
+  pre{white-space:pre-wrap;border:1px solid #bbb}
+  .hero{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="toolbar">
+  <button class="btn" id="themeBtn" type="button">Toggle dark mode</button>
+  <button class="btn" id="printBtn" type="button">Print / Save as PDF</button>
+</div>
+
+<header class="hero">
+  <div class="bar" aria-hidden="true"><i></i><i></i><i></i></div>
+  <h1><span class="pr">$</span>Git commands every developer should know</h1>
+  <p>Ten commands I use all the time, explained in plain language: what each one does, the useful variations, and the mistakes to avoid.</p>
+  <div class="meta"><span>status</span><span>pull</span><span>add</span><span>commit</span><span>push</span><span>reset</span><span>merge</span><span>rebase</span></div>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <h2>In this guide</h2>
+  <ol>
+    <li><a href="#c1"><b>01</b><code>git status</code></a></li>
+    <li><a href="#c2"><b>02</b><code>git pull</code></a></li>
+    <li><a href="#c3"><b>03</b><code>git add</code></a></li>
+    <li><a href="#c4"><b>04</b><code>git commit</code></a></li>
+    <li><a href="#c5"><b>05</b><code>git push</code></a></li>
+    <li><a href="#c6"><b>06</b><code>git reset --soft</code></a></li>
+    <li><a href="#c7"><b>07</b><code>git reset --soft HEAD~n</code></a></li>
+    <li><a href="#c8"><b>08</b><code>git reset --hard</code></a></li>
+    <li><a href="#c9"><b>09</b><code>git merge</code></a></li>
+    <li><a href="#c10"><b>10</b><code>git rebase</code></a></li>
+    <li><a href="#undo"><b>+</b>Which command to use to undo?</a></li>
+    <li><a href="#linkedin"><b>+</b>LinkedIn post kit</a></li>
+  </ol>
+</nav>
+
+<section class="card">
+  <div class="pad">
+    <h2 class="sec">First, the big picture</h2>
+    <p>Git keeps your work in four places. Almost every command moves changes from one place to the next.</p>
+    <div class="flow" role="img" aria-label="Working directory to staging area with git add, staging area to local repository with git commit, local repository to remote with git push">
+      <div class="box a"><b>Working directory</b><small>files you edit</small></div>
+      <div class="arr"><span>&rarr;</span>git add</div>
+      <div class="box b"><b>Staging area</b><small>the next commit</small></div>
+      <div class="arr"><span>&rarr;</span>git commit</div>
+      <div class="box c"><b>Local repository</b><small>your commit history</small></div>
+      <div class="arr"><span>&rarr;</span>git push</div>
+      <div class="box d"><b>Remote</b><small>GitHub, Azure DevOps...</small></div>
+    </div>
+    <div class="flow-back"><span>&larr; git pull (fetch + merge) brings remote changes back</span></div>
+    <p style="margin:0">Keep this picture in mind. <code>reset</code> moves changes backwards through these places, while <code>merge</code> and <code>rebase</code> combine histories.</p>
+  </div>
+</section>
+
+<!-- 01 -->
+<article class="cmd" id="c1">
+  <header><span class="no">01</span><div><h2>git status</h2><p>See what changed before you do anything else</p></div></header>
+  <div class="body">
+    <h3>What it does</h3>
+    <p>Shows the state of your working directory and staging area: which branch you are on, which files are modified, which are staged for the next commit, and which are untracked. It only reads, it never changes anything, so it is always safe to run. <span class="pill safe">SAFE</span></p>
+    <h3>Example</h3>
+<pre><code><span class="pr">$</span> git status
+<span class="o">On branch feature/login
+Your branch is ahead of 'origin/feature/login' by 1 commit.</span>
+
+<span class="o">Changes to be committed:</span>        <span class="cm"># staged</span>
+        <span class="ok">modified:   Login.cs</span>
+
+<span class="o">Changes not staged for commit:</span>  <span class="cm"># edited, not added yet</span>
+        <span class="bad">modified:   README.md</span>
+
+<span class="o">Untracked files:</span>                <span class="cm"># new files Git doesn't know yet</span>
+        <span class="bad">notes.txt</span></code></pre>
+    <h3>Varieties</h3>
+    <div class="tw"><table>
+      <tr><th>Command</th><th>What it does</th></tr>
+      <tr><td>git status</td><td>Full, readable output with hints on what to do next.</td></tr>
+      <tr><td>git status -s</td><td>Short format: two letters per file. Great for a quick look.</td></tr>
+      <tr><td>git status -sb</td><td>Short format plus the branch and its ahead/behind count.</td></tr>
+      <tr><td>git status -uno</td><td>Hide untracked files (<code>--untracked-files=no</code>).</td></tr>
+      <tr><td>git status --ignored</td><td>Also list files ignored by <code>.gitignore</code>.</td></tr>
+      <tr><td>git status --porcelain</td><td>Stable, script-friendly output that does not change between Git versions.</td></tr>
+    </table></div>
+    <p><strong>Reading the short format:</strong> the first letter is the staging area, the second is the working directory.</p>
+<pre><code><span class="o">?? notes.txt      </span><span class="cm"># untracked</span>
+<span class="o"> M README.md      </span><span class="cm"># modified, not staged</span>
+<span class="o">M  Login.cs       </span><span class="cm"># modified and staged</span>
+<span class="o">MM Program.cs     </span><span class="cm"># staged, then edited again</span>
+<span class="o">A  NewFile.cs     </span><span class="cm"># new file, staged</span>
+<span class="o">D  Old.cs         </span><span class="cm"># deleted, staged</span></code></pre>
+    <div class="note tip"><b class="t">Habit worth building</b>Run <code>git status</code> before every <code>add</code>, <code>commit</code>, <code>reset</code> and <code>push</code>. It takes a second and prevents most mistakes.</div>
+  </div>
+</article>
+
+<!-- 02 -->
+<article class="cmd" id="c2">
+  <header><span class="no">02</span><div><h2>git pull</h2><p>Bring the latest remote changes into your branch</p></div></header>
+  <div class="body">
+    <h3>What it does</h3>
+    <p><code>git pull</code> is two commands in one: <code>git fetch</code> (download new commits from the remote) followed by <code>git merge</code> (combine them into your current branch). With <code>--rebase</code>, the second step becomes a rebase instead of a merge.</p>
+<pre><code><span class="cm"># These two are what "git pull" does together</span>
+<span class="pr">$</span> git fetch origin
+<span class="pr">$</span> git merge origin/main</code></pre>
+    <h3>Varieties</h3>
+    <div class="tw"><table>
+      <tr><th>Command</th><th>What it does</th></tr>
+      <tr><td>git pull</td><td>Fetch and merge from the branch your current branch tracks.</td></tr>
+      <tr><td>git pull origin main</td><td>Pull a specific remote branch into the current branch.</td></tr>
+      <tr><td>git pull --rebase</td><td>Fetch, then replay your local commits on top. Keeps history linear, with no extra merge commit.</td></tr>
+      <tr><td>git pull --ff-only</td><td>Only succeed if it can fast-forward. Refuses to create a merge commit, so it is the safest option.</td></tr>
+      <tr><td>git pull --no-rebase</td><td>Force merge behaviour, even if rebase is configured.</td></tr>
+      <tr><td>git pull --autostash</td><td>Stash your uncommitted changes, pull, then re-apply them.</td></tr>
+      <tr><td>git pull --all</td><td>Fetch from all remotes.</td></tr>
+      <tr><td>git pull --prune</td><td>Also remove local references to branches deleted on the remote.</td></tr>
+      <tr><td>git fetch</td><td>Download only, without changing your working files. Use it to look before you merge.</td></tr>
+    </table></div>
+    <h3>Make rebase the default</h3>
+<pre class="has-copy"><code>git config --global pull.rebase true</code></pre>
+    <div class="note warn"><b class="t">Watch out</b>If you have uncommitted changes that touch the same files as incoming changes, the pull can be blocked. Commit, stash, or use <code>--autostash</code> first. If there are conflicts, fix the files, <code>git add</code> them, then continue (<code>git merge --continue</code> or <code>git rebase --continue</code>).</div>
+    <div class="note tip"><b class="t">When to use fetch instead</b>When you want to inspect what changed first: <code>git fetch</code>, then <code>git log HEAD..origin/main --oneline</code> to see the incoming commits.</div>
+  </div>
+</article>
+
+<!-- 03 -->
+<article class="cmd" id="c3">
+  <header><span class="no">03</span><div><h2>git add</h2><p>Choose what goes into the next commit</p></div></header>
+  <div class="body">
+    <h3>What it does</h3>
+    <p>Moves changes from the working directory into the <strong>staging area</strong>. Only staged changes are included in the next commit, which lets you build clean, focused commits even if you changed many things.</p>
+    <h3>Varieties</h3>
+    <div class="tw"><table>
+      <tr><th>Command</th><th>What it does</th></tr>
+      <tr><td>git add file.cs</td><td>Stage one specific file.</td></tr>
+      <tr><td>git add a.cs b.cs</td><td>Stage several named files.</td></tr>
+      <tr><td>git add src/</td><td>Stage everything inside a folder.</td></tr>
+      <tr><td>git add *.cs</td><td>Stage files matching a pattern.</td></tr>
+      <tr><td>git add .</td><td>Stage new, modified and deleted files in the current folder and below.</td></tr>
+      <tr><td>git add -A</td><td>Stage everything in the whole repository (<code>--all</code>).</td></tr>
+      <tr><td>git add -u</td><td>Stage only modified and deleted files that Git already tracks (<code>--update</code>). Skips new files.</td></tr>
+      <tr><td>git add -p</td><td>Patch mode: review each changed chunk and choose <code>y</code>/<code>n</code>. Perfect for splitting one file into two commits.</td></tr>
+      <tr><td>git add -i</td><td>Interactive menu for staging.</td></tr>
+      <tr><td>git add -n .</td><td>Dry run: show what would be staged, without staging it.</td></tr>
+      <tr><td>git add -f file</td><td>Force-add a file that <code>.gitignore</code> would normally ignore.</td></tr>
+      <tr><td>git add -N file</td><td>"Intent to add": record a new file so it shows in <code>git diff</code> before it is staged.</td></tr>
+    </table></div>
+    <h3>What each option stages</h3>
+    <div class="tw"><table>
+      <tr><th>Option</th><th class="c">New files</th><th class="c">Modified</th><th class="c">Deleted</th></tr>
+      <tr><td>git add .</td><td class="y c">Yes</td><td class="y c">Yes</td><td class="y c">Yes</td></tr>
+      <tr><td>git add -A</td><td class="y c">Yes</td><td class="y c">Yes</td><td class="y c">Yes</td></tr>
+      <tr><td>git add -u</td><td class="n c">No</td><td class="y c">Yes</td><td class="y c">Yes</td></tr>
+    </table></div>
+    <p style="font-size:.9rem;color:var(--muted)"><code>.</code> and <code>-A</code> differ only in scope: <code>.</code> is limited to the current directory, <code>-A</code> covers the whole repo.</p>
+    <h3>Undo a mistaken add</h3>
+<pre class="has-copy"><code>git restore --staged file.cs    # unstage a file (keeps your edits)
+git reset file.cs               # older equivalent</code></pre>
+    <div class="note warn"><b class="t">Watch out</b><code>git add .</code> is convenient but can stage things you did not mean to commit (logs, secrets, build output). Check with <code>git status</code>, and keep a good <code>.gitignore</code>.</div>
+  </div>
+</article>
+
+<!-- 04 -->
+<article class="cmd" id="c4">
+  <header><span class="no">04</span><div><h2>git commit</h2><p>Save a snapshot of your staged changes</p></div></header>
+  <div class="body">
+    <h3>What it does</h3>
+    <p>Takes everything in the staging area and records it as a new commit in your <strong>local</strong> repository, with a message explaining why. Commits are your project's checkpoints, and nothing leaves your machine until you push.</p>
+    <h3>Varieties</h3>
+    <div class="tw"><table>
+      <tr><th>Command</th><th>What it does</th></tr>
+      <tr><td>git commit</td><td>Open your editor to write the message.</td></tr>
+      <tr><td>git commit -m "message"</td><td>Commit with an inline message.</td></tr>
+      <tr><td>git commit -m "title" -m "details"</td><td>Subject line plus a separate body paragraph.</td></tr>
+      <tr><td>git commit -a</td><td>Auto-stage all <em>tracked</em> modified and deleted files, then commit. New files are not included.</td></tr>
+      <tr><td>git commit -am "message"</td><td>The shortcut for the two above.</td></tr>
+      <tr><td>git commit --amend</td><td>Rewrite the <em>last</em> commit: change its message and/or add newly staged changes.</td></tr>
+      <tr><td>git commit --amend --no-edit</td><td>Add staged changes to the last commit, keeping its message.</td></tr>
+      <tr><td>git commit --allow-empty -m "msg"</td><td>Create a commit with no changes (for example to retrigger a pipeline).</td></tr>
+      <tr><td>git commit --no-verify</td><td>Skip pre-commit hooks. Use sparingly.</td></tr>
+      <tr><td>git commit --fixup &lt;hash&gt;</td><td>Create a fix commit that <code>rebase -i --autosquash</code> will fold into the target commit.</td></tr>
+      <tr><td>git commit -S</td><td>Sign the commit with your GPG/SSH key.</td></tr>
+      <tr><td>git commit -v</td><td>Show the diff inside the editor while you write the message.</td></tr>
+    </table></div>
+    <h3>Writing a good message</h3>
+    <ul>
+      <li>Short subject (about 50 characters), in the imperative mood: "Add login validation", not "Added" or "Adds".</li>
+      <li>Explain <em>why</em> in the body when it is not obvious. The diff already shows <em>what</em>.</li>
+      <li>One logical change per commit.</li>
+    </ul>
+<pre class="has-copy"><code>git commit -m "Add input validation to login endpoint" -m "Reject empty usernames and passwords before hitting the database."</code></pre>
+    <div class="note danger"><b class="t">Amend rewrites history</b><code>--amend</code> replaces the last commit with a new one (new hash). If that commit was already pushed to a shared branch, do not amend it: make a new commit instead.</div>
+  </div>
+</article>
+
+<!-- 05 -->
+<article class="cmd" id="c5">
+  <header><span class="no">05</span><div><h2>git push</h2><p>Publish your local commits to the remote</p></div></header>
+  <div class="body">
+    <h3>What it does</h3>
+    <p>Uploads commits from your local branch to the matching branch on the remote repository so your team can see them. Git accepts the push only if it is a fast-forward, meaning the remote has no commits you lack.</p>
+    <h3>Varieties</h3>
+    <div class="tw"><table>
+      <tr><th>Command</th><th>What it does</th></tr>
+      <tr><td>git push</td><td>Push the current branch to its upstream.</td></tr>
+      <tr><td>git push origin main</td><td>Push a named branch to a named remote.</td></tr>
+      <tr><td>git push -u origin feature/x</td><td>Push and set the upstream, so later you can just type <code>git push</code> and <code>git pull</code>. Use it for a new branch's first push.</td></tr>
+      <tr><td>git push origin local:remote</td><td>Push a local branch to a differently named remote branch.</td></tr>
+      <tr><td>git push --all</td><td>Push all local branches.</td></tr>
+      <tr><td>git push --tags</td><td>Push all tags.</td></tr>
+      <tr><td>git push --follow-tags</td><td>Push commits plus the annotated tags that point at them.</td></tr>
+      <tr><td>git push --dry-run</td><td>Show what would be pushed without pushing.</td></tr>
+      <tr><td>git push origin --delete feature/x</td><td>Delete a branch on the remote.</td></tr>
+      <tr><td>git push --force-with-lease</td><td>Force-push, but only if nobody else has pushed since you last fetched. <span class="pill mid">SAFER FORCE</span></td></tr>
+      <tr><td>git push --force</td><td>Overwrite the remote branch no matter what. <span class="pill risk">DANGEROUS</span></td></tr>
+    </table></div>
+    <h3>When the push is rejected</h3>
+<pre><code><span class="pr">$</span> git push
+<span class="bad"> ! [rejected]        main -&gt; main (fetch first)</span>
+<span class="cm"># The remote has commits you don't have. Bring them in, then push again:</span>
+<span class="pr">$</span> git pull --rebase
+<span class="pr">$</span> git push</code></pre>
+    <div class="note danger"><b class="t">Force-pushing</b>Force-pushing rewrites the shared history and can erase teammates' work. Never force-push to <code>main</code> or any shared branch. On your own feature branch after a rebase or amend, prefer <code>--force-with-lease</code> over <code>--force</code>.</div>
+  </div>
+</article>
+
+<!-- reset overview -->
+<section class="card">
+  <div class="pad">
+    <h2 class="sec">Before the reset commands: the three modes</h2>
+    <p><code>git reset</code> moves your branch pointer (HEAD) to another commit. The mode decides what happens to the staging area and your files.</p>
+    <div class="tw"><table>
+      <tr><th>Mode</th><th class="c">HEAD moves</th><th class="c">Staging area</th><th class="c">Working files</th><th>Risk</th></tr>
+      <tr><td>--soft</td><td class="c">Yes</td><td class="c">Kept (still staged)</td><td class="c">Kept</td><td><span class="pill safe">SAFE</span></td></tr>
+      <tr><td>--mixed (default)</td><td class="c">Yes</td><td class="c">Reset (unstaged)</td><td class="c">Kept</td><td><span class="pill safe">SAFE</span></td></tr>
+      <tr><td>--hard</td><td class="c">Yes</td><td class="c">Reset</td><td class="c">Reset (changes lost)</td><td><span class="pill risk">DESTRUCTIVE</span></td></tr>
+    </table></div>
+<pre><code><span class="cm">Before:  A --- B --- C --- D   (HEAD at D)
+
+git reset &lt;mode&gt; B   moves the branch back to B.
+ --soft   the changes from C and D stay STAGED
+ --mixed  the changes from C and D stay in your files, UNSTAGED
+ --hard   the changes from C and D are DISCARDED</span></code></pre>
+  </div>
+</section>
+
+<!-- 06 -->
+<article class="cmd" id="c6">
+  <header><span class="no">06</span><div><h2>git reset --soft</h2><p>Undo a commit but keep every change staged</p></div></header>
+  <div class="body">
+    <h3>What it does</h3>
+    <p>Moves HEAD to another commit and <strong>leaves the staging area and your files untouched</strong>. The commit disappears from history, but all of its changes are sitting in the staging area, ready to be committed again.</p>
+    <h3>Example</h3>
+<pre><code><span class="pr">$</span> git reset --soft HEAD~1      <span class="cm"># undo last commit, keep changes staged</span>
+<span class="pr">$</span> git status
+<span class="o">Changes to be committed:
+        modified:   Login.cs</span>      <span class="cm"># still staged, ready to recommit</span></code></pre>
+    <h3>When it is useful</h3>
+    <ul>
+      <li>You committed too early or with a poor message, and want to recommit properly.</li>
+      <li>You forgot to include a file: unstage nothing, add the file, commit again.</li>
+      <li>You want to combine several small commits into one (see the next section).</li>
+    </ul>
+    <h3>Varieties</h3>
+    <div class="tw"><table>
+      <tr><th>Command</th><th>What it does</th></tr>
+      <tr><td>git reset --soft HEAD~1</td><td>Undo the last commit, keeping changes staged.</td></tr>
+      <tr><td>git reset --soft &lt;hash&gt;</td><td>Move back to a specific commit.</td></tr>
+      <tr><td>git reset --soft origin/main</td><td>Collapse all your local commits since the remote branch back into the staging area.</td></tr>
+      <tr><td>git reset --mixed HEAD~1</td><td>Same idea, but the changes come back <em>unstaged</em>. This is the default if you write just <code>git reset HEAD~1</code>.</td></tr>
+    </table></div>
+    <div class="note ok"><b class="t">Why it is safe</b>No file content is lost, and you can always undo the reset itself with <code>git reset --soft ORIG_HEAD</code> or by finding the old commit in <code>git reflog</code>.</div>
+  </div>
+</article>
+
+<!-- 07 -->
+<article class="cmd" id="c7">
+  <header><span class="no">07</span><div><h2>git reset --soft HEAD~n</h2><p>Undo the last n commits and squash them into one</p></div></header>
+  <div class="body">
+    <h3>What it does</h3>
+    <p>The same soft reset, but stepping back <strong>n commits at once</strong>. Every change from those n commits ends up staged together, so you can create a single clean commit. This is one of the simplest ways to squash.</p>
+    <h3>Understanding HEAD~n</h3>
+    <div class="tw"><table>
+      <tr><th>Reference</th><th>Meaning</th></tr>
+      <tr><td>HEAD</td><td>The latest commit on your current branch.</td></tr>
+      <tr><td>HEAD~1  (or HEAD^)</td><td>One commit before HEAD (the parent).</td></tr>
+      <tr><td>HEAD~3</td><td>Three commits before HEAD.</td></tr>
+      <tr><td>&lt;hash&gt;</td><td>A specific commit by its ID (find it with <code>git log --oneline</code>).</td></tr>
+    </table></div>
+    <h3>Squash the last 3 commits into one</h3>
+<pre><code><span class="pr">$</span> git log --oneline
+<span class="o">a1b2c3d Fix typo
+e4f5a6b WIP validation
+9c8d7e6 Start login feature
+5f4e3d2 Previous work             </span><span class="cm"># keep this one</span>
+
+<span class="pr">$</span> git reset --soft HEAD~3
+<span class="pr">$</span> git commit -m "Add login feature with validation"
+
+<span class="pr">$</span> git log --oneline
+<span class="o">7a8b9c0 Add login feature with validation
+5f4e3d2 Previous work</span></code></pre>
+    <h3>Varieties</h3>
+    <div class="tw"><table>
+      <tr><th>Command</th><th>What it does</th></tr>
+      <tr><td>git reset --soft HEAD~2</td><td>Undo the last 2 commits, keep all their changes staged.</td></tr>
+      <tr><td>git reset --soft HEAD~5</td><td>Undo the last 5 commits, ready to recommit as one.</td></tr>
+      <tr><td>git reset --soft HEAD~3 &amp;&amp; git commit -m "..."</td><td>Squash the last 3 into a single commit in one line.</td></tr>
+      <tr><td>git log --oneline -n 5</td><td>Check how many commits to go back before you reset.</td></tr>
+    </table></div>
+    <div class="note danger"><b class="t">Already pushed?</b>If those commits are on a shared remote, do not rewrite them. Either use <code>git revert</code> to undo them safely, or (on your own branch only) squash locally and <code>git push --force-with-lease</code>.</div>
+  </div>
+</article>
+
+<!-- 08 -->
+<article class="cmd" id="c8">
+  <header><span class="no">08</span><div><h2>git reset --hard</h2><p>Throw away commits and local changes completely</p></div></header>
+  <div class="body">
+    <h3>What it does</h3>
+    <p>Moves HEAD to the target commit <strong>and</strong> makes both the staging area and your working files match it exactly. Uncommitted changes to tracked files are wiped out. <span class="pill risk">DESTRUCTIVE</span></p>
+    <h3>Varieties</h3>
+    <div class="tw"><table>
+      <tr><th>Command</th><th>What it does</th></tr>
+      <tr><td>git reset --hard</td><td>Discard all uncommitted changes and return to the last commit (same as <code>--hard HEAD</code>).</td></tr>
+      <tr><td>git reset --hard HEAD~1</td><td>Delete the last commit and its changes entirely.</td></tr>
+      <tr><td>git reset --hard HEAD~3</td><td>Delete the last 3 commits and their changes.</td></tr>
+      <tr><td>git reset --hard &lt;hash&gt;</td><td>Jump the branch and files to an exact commit.</td></tr>
+      <tr><td>git reset --hard origin/main</td><td>Make your local branch identical to the remote one. Local commits and changes are dropped.</td></tr>
+      <tr><td>git reset --hard ORIG_HEAD</td><td>Undo the previous reset or a bad merge or pull, by returning to where HEAD was before.</td></tr>
+    </table></div>
+    <h3>Typical use: "my branch is a mess, make it match the remote"</h3>
+<pre><code><span class="pr">$</span> git fetch origin
+<span class="pr">$</span> git reset --hard origin/main</code></pre>
+    <h3>What --hard does not touch</h3>
+    <p>Untracked files (brand-new files never added) survive a hard reset. To remove those too, use <code>git clean</code>:</p>
+<pre><code><span class="pr">$</span> git clean -nd      <span class="cm"># preview what would be deleted (dry run)</span>
+<span class="pr">$</span> git clean -fd      <span class="cm"># delete untracked files and folders</span></code></pre>
+    <h3>Recovering after a mistake</h3>
+    <p>If you reset away <em>committed</em> work, Git still remembers it for a while in the reflog:</p>
+<pre><code><span class="pr">$</span> git reflog
+<span class="o">7a8b9c0 HEAD@{0}: reset: moving to HEAD~2
+e4f5a6b HEAD@{1}: commit: Add validation   </span><span class="cm"># the lost commit</span>
+<span class="pr">$</span> git reset --hard e4f5a6b</code></pre>
+    <div class="note danger"><b class="t">No safety net for uncommitted work</b>Changes that were never committed or stashed <strong>cannot</strong> be recovered after <code>--hard</code>. Run <code>git status</code> and <code>git diff</code> first. If you only want to discard changes in one file, use the gentler <code>git restore file.cs</code>.</div>
+  </div>
+</article>
+
+<!-- 09 -->
+<article class="cmd" id="c9">
+  <header><span class="no">09</span><div><h2>git merge</h2><p>Combine another branch into the one you are on</p></div></header>
+  <div class="body">
+    <h3>What it does</h3>
+    <p>Brings the commits of another branch into your current branch. First switch to the branch that should <em>receive</em> the changes, then merge the other one in.</p>
+<pre><code><span class="pr">$</span> git switch main
+<span class="pr">$</span> git merge feature/login</code></pre>
+    <h3>Two kinds of merge</h3>
+    <div class="vs">
+      <div><h4>Fast-forward</h4>Used when <code>main</code> has not moved since the branch was created. Git simply moves the pointer forward. No merge commit.
+<pre><code><span class="cm">main     A---B
+              \
+feature        C---D
+
+after: A---B---C---D  (main)</span></code></pre></div>
+      <div><h4>Three-way merge</h4>Used when both branches have new commits. Git creates a <strong>merge commit</strong> with two parents.
+<pre><code><span class="cm">main     A---B---E-------M
+              \         /
+feature        C---D---
+
+M = merge commit</span></code></pre></div>
+    </div>
+    <h3>Varieties</h3>
+    <div class="tw"><table>
+      <tr><th>Command</th><th>What it does</th></tr>
+      <tr><td>git merge feature</td><td>Merge, fast-forwarding if possible.</td></tr>
+      <tr><td>git merge --no-ff feature</td><td>Always create a merge commit, even if a fast-forward is possible. Keeps the branch visible in history.</td></tr>
+      <tr><td>git merge --ff-only feature</td><td>Merge only if it can fast-forward, otherwise stop.</td></tr>
+      <tr><td>git merge --squash feature</td><td>Stage the combined changes as one set, without a merge commit. You then run <code>git commit</code> yourself.</td></tr>
+      <tr><td>git merge --no-commit feature</td><td>Merge but pause before committing, so you can inspect the result.</td></tr>
+      <tr><td>git merge -m "message" feature</td><td>Provide the merge commit message.</td></tr>
+      <tr><td>git merge -X theirs feature</td><td>On conflicting chunks, prefer the incoming branch (<code>-X ours</code> prefers yours).</td></tr>
+      <tr><td>git merge --abort</td><td>Cancel a merge in progress and go back to how things were.</td></tr>
+      <tr><td>git merge --continue</td><td>Finish the merge after resolving conflicts.</td></tr>
+    </table></div>
+    <h3>Resolving a conflict</h3>
+    <p>When both branches changed the same lines, Git stops and marks the file:</p>
+<pre><code><span class="bad">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+<span class="o">return total * 0.9;      </span><span class="cm"># your current branch</span>
+<span class="bad">=======</span>
+<span class="o">return total * 0.85;     </span><span class="cm"># the incoming branch</span>
+<span class="bad">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/discount</span></code></pre>
+    <ol>
+      <li>Edit the file to the final version you want, and delete the markers.</li>
+      <li><code>git add file.cs</code></li>
+      <li><code>git commit</code> (or <code>git merge --continue</code>).</li>
+    </ol>
+    <div class="note tip"><b class="t">Good to know</b>A merge never rewrites existing commits, so it is safe on shared branches. The trade-off is a history with extra merge commits.</div>
+  </div>
+</article>
+
+<!-- 10 -->
+<article class="cmd" id="c10">
+  <header><span class="no">10</span><div><h2>git rebase</h2><p>Replay your commits on top of a new base</p></div></header>
+  <div class="body">
+    <h3>What it does</h3>
+    <p>Takes the commits on your branch, sets them aside, updates the branch to the tip of another branch, and re-applies your commits one by one on top. The result is a clean, straight-line history, as if you had started your work from the latest code.</p>
+<pre><code><span class="pr">$</span> git switch feature/login
+<span class="pr">$</span> git rebase main
+
+<span class="cm">Before:   A---B---C  (main)
+               \
+                D---E  (feature)
+
+After:    A---B---C  (main)
+                   \
+                    D'---E'  (feature)   </span><span class="cm"># new commits, new hashes</span></code></pre>
+    <h3>Varieties</h3>
+    <div class="tw"><table>
+      <tr><th>Command</th><th>What it does</th></tr>
+      <tr><td>git rebase main</td><td>Move your current branch onto the latest <code>main</code>.</td></tr>
+      <tr><td>git rebase origin/main</td><td>Rebase onto the remote version of the branch.</td></tr>
+      <tr><td>git rebase -i HEAD~n</td><td>Interactive rebase: edit, reorder, squash or drop the last n commits.</td></tr>
+      <tr><td>git rebase --onto new old branch</td><td>Move a range of commits to a different base (for a branch created from the wrong place).</td></tr>
+      <tr><td>git rebase --continue</td><td>Carry on after resolving a conflict.</td></tr>
+      <tr><td>git rebase --skip</td><td>Skip the commit that is causing the conflict.</td></tr>
+      <tr><td>git rebase --abort</td><td>Cancel and return to the state before the rebase.</td></tr>
+      <tr><td>git rebase --autostash</td><td>Stash uncommitted changes, rebase, then restore them.</td></tr>
+      <tr><td>git rebase -i --autosquash</td><td>Automatically arrange <code>fixup!</code> commits next to the commits they fix.</td></tr>
+      <tr><td>git pull --rebase</td><td>Fetch and rebase your local commits in one step.</td></tr>
+    </table></div>
+    <h3>Interactive rebase actions</h3>
+<pre><code><span class="pr">$</span> git rebase -i HEAD~4
+
+<span class="o">pick   9c8d7e6 Start login feature
+squash e4f5a6b WIP validation        </span><span class="cm"># melt into the previous commit, merge messages</span>
+<span class="o">fixup  a1b2c3d Fix typo              </span><span class="cm"># melt into the previous commit, drop this message</span>
+<span class="o">reword 3b4c5d6 Update docs          </span><span class="cm"># keep the change, edit the message</span></code></pre>
+    <div class="tw"><table>
+      <tr><th>Action</th><th>Effect</th></tr>
+      <tr><td>pick</td><td>Keep the commit as it is.</td></tr>
+      <tr><td>reword</td><td>Keep the commit, change its message.</td></tr>
+      <tr><td>edit</td><td>Pause at this commit so you can change its content.</td></tr>
+      <tr><td>squash</td><td>Combine with the previous commit and merge the messages.</td></tr>
+      <tr><td>fixup</td><td>Combine with the previous commit and discard this message.</td></tr>
+      <tr><td>drop</td><td>Delete the commit.</td></tr>
+    </table></div>
+    <div class="note danger"><b class="t">The golden rule of rebase</b>Never rebase commits that other people already have (shared or public branches). Rebase rewrites history, giving commits new hashes. Rebase your own local or feature branch, and after a rebase of a pushed branch use <code>git push --force-with-lease</code>.</div>
+    <h3>Merge vs rebase</h3>
+    <div class="tw"><table>
+      <tr><th></th><th>Merge</th><th>Rebase</th></tr>
+      <tr><td>History</td><td>Preserves the true history, with merge commits.</td><td>Linear and tidy.</td></tr>
+      <tr><td>Rewrites commits?</td><td class="y">No</td><td class="n">Yes (new hashes)</td></tr>
+      <tr><td>Safe on shared branches</td><td class="y">Yes</td><td class="n">No</td></tr>
+      <tr><td>Conflicts</td><td>Resolve once.</td><td>May resolve per commit.</td></tr>
+      <tr><td>Best for</td><td>Integrating a finished feature into <code>main</code>.</td><td>Updating your feature branch with the latest <code>main</code>, and cleaning commits before a pull request.</td></tr>
+    </table></div>
+  </div>
+</article>
+
+<!-- undo cheat sheet -->
+<section class="card" id="undo">
+  <div class="pad">
+    <h2 class="sec">Cheat sheet: which command do I need?</h2>
+    <div class="tw"><table>
+      <tr><th>I want to...</th><th>Use</th></tr>
+      <tr><td>See what changed</td><td>git status, git diff</td></tr>
+      <tr><td>Unstage a file but keep my edits</td><td>git restore --staged file</td></tr>
+      <tr><td>Discard edits in one file</td><td>git restore file</td></tr>
+      <tr><td>Fix the last commit's message or add a forgotten file</td><td>git commit --amend</td></tr>
+      <tr><td>Undo last commit, keep changes <em>staged</em></td><td>git reset --soft HEAD~1</td></tr>
+      <tr><td>Undo last commit, keep changes <em>unstaged</em></td><td>git reset HEAD~1</td></tr>
+      <tr><td>Combine the last n commits into one</td><td>git reset --soft HEAD~n, then commit</td></tr>
+      <tr><td>Tidy, reorder or squash commits selectively</td><td>git rebase -i HEAD~n</td></tr>
+      <tr><td>Throw away everything and match the last commit</td><td>git reset --hard</td></tr>
+      <tr><td>Make my branch identical to the remote</td><td>git fetch, then git reset --hard origin/main</td></tr>
+      <tr><td>Undo a commit that is already pushed, safely</td><td>git revert &lt;hash&gt;</td></tr>
+      <tr><td>Find a "lost" commit</td><td>git reflog</td></tr>
+      <tr><td>Update my feature branch with latest main</td><td>git pull --rebase, or git rebase main</td></tr>
+      <tr><td>Integrate a finished feature</td><td>git merge feature</td></tr>
+    </table></div>
+    <h3>Habits that keep you safe</h3>
+    <ul>
+      <li>Run <code>git status</code> before and after every important command.</li>
+      <li>Commit often in small, focused steps, because committed work is almost always recoverable.</li>
+      <li>Rewrite only local history. Once it is shared, use <code>revert</code> and merge.</li>
+      <li>Prefer <code>--force-with-lease</code> over <code>--force</code>.</li>
+      <li>Before a risky operation, make a backup branch: <code>git branch backup</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- LinkedIn kit -->
+<section class="card linkedin" id="linkedin">
+  <div class="pad">
+    <h2 class="sec">LinkedIn post kit</h2>
+    <p>LinkedIn cannot display an HTML file directly, so share this guide in one of these ways:</p>
+    <ul>
+      <li><strong>PDF carousel (recommended):</strong> click <em>Print / Save as PDF</em> at the top, then upload the PDF to a LinkedIn post as a document. Each command card becomes a swipeable page.</li>
+      <li><strong>Screenshots:</strong> capture individual command cards and attach them as images.</li>
+      <li><strong>Link:</strong> host the HTML file (for example on GitHub Pages) and share the URL.</li>
+    </ul>
+    <h3>Ready-to-use caption</h3>
+    <textarea id="caption" readonly aria-label="LinkedIn caption">Git commands every developer should know 🚀
+
+Git looks simple until you hit a merge conflict, a rejected push, or a commit you wish you could undo. So I wrote down the commands I rely on, with the variations that actually matter.
+
+📌 git status: always look before you leap
+📌 git pull / git pull --rebase: stay in sync
+📌 git add -p: stage only what you mean to
+📌 git commit --amend: fix the last commit
+📌 git push --force-with-lease: the safer force
+📌 git reset --soft HEAD~n: squash n commits into one
+📌 git reset --hard: powerful, and destructive
+📌 git merge vs git rebase: preserve history or keep it linear
+
+My biggest takeaways:
+1️⃣ Know the three places your changes live: working directory, staging area, repository.
+2️⃣ Rewrite only local history. Never rebase or force-push shared branches.
+3️⃣ git reflog can rescue commits you thought were lost.
+
+Which Git command saved you the most time? Tell me in the comments 👇
+
+#Git #GitHub #SoftwareDevelopment #DevOps #Programming #VersionControl #LearningInPublic #Developers</textarea>
+    <div class="row">
+      <button class="btn" id="copyCaption" type="button">Copy caption</button>
+      <span class="status" id="copyStatus" role="status" aria-live="polite"></span>
+    </div>
+  </div>
+</section>
+
+<footer>Keep practising: create a throwaway repository and try each command safely before using it on real work.</footer>
+</div>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  document.getElementById('themeBtn').addEventListener('click',function(){
+    var dark=root.dataset.theme?root.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
+    root.dataset.theme=dark?'light':'dark';
+  });
+  document.getElementById('printBtn').addEventListener('click',function(){window.print()});
+
+  function copyText(text,onDone){
+    function fallback(){
+      var ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+      document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');onDone(true)}catch(e){onDone(false)}
+      document.body.removeChild(ta);
+    }
+    if(navigator.clipboard&&window.isSecureContext){
+      navigator.clipboard.writeText(text).then(function(){onDone(true)},fallback);
+    }else{fallback()}
+  }
+
+  // Copy buttons on blocks marked has-copy
+  document.querySelectorAll('pre.has-copy').forEach(function(pre){
+    var b=document.createElement('button');b.type='button';b.className='copy';b.textContent='Copy';
+    b.addEventListener('click',function(){
+      var code=pre.querySelector('code').innerText.split('\n').filter(function(l){return l.trim()&&l.trim().charAt(0)!=='#'}).map(function(l){return l.replace(/\s+#.*$/,'')}).join('\n');
+      copyText(code,function(ok){b.textContent=ok?'Copied':'Copy failed';setTimeout(function(){b.textContent='Copy'},1500)});
+    });
+    pre.appendChild(b);
+  });
+
+  // Caption copy
+  var cap=document.getElementById('caption'),st=document.getElementById('copyStatus');
+  document.getElementById('copyCaption').addEventListener('click',function(){
+    copyText(cap.value,function(ok){st.textContent=ok?'Caption copied. Paste it into your LinkedIn post.':'Copy failed. Select the text and copy manually.';setTimeout(function(){st.textContent=''},3000)});
+  });
+})();
+</script>
+</body>
+</html>
