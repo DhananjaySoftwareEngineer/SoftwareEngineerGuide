@@ -3,41 +3,148 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My Blog</title>
+<title>Software Engineer Guide</title>
 <style>
-  :root { --bg:#ffffff; --fg:#1f2328; --muted:#656d76; --card:#f6f8fa; --border:#d0d7de; --accent:#0969da; }
+  :root { --bg:#ffffff; --fg:#1f2328; --muted:#656d76; --card:#f6f8fa; --border:#d0d7de; --accent:#0969da; --active:#ddf4ff; --side:260px; }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#0d1117; --fg:#e6edf3; --muted:#8b949e; --card:#161b22; --border:#30363d; --accent:#58a6ff; }
+    :root { --bg:#0d1117; --fg:#e6edf3; --muted:#8b949e; --card:#161b22; --border:#30363d; --accent:#58a6ff; --active:#1f2d3d; }
   }
   * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--fg); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height:1.6; }
-  .wrap { max-width:760px; margin:0 auto; padding:48px 20px; }
+  html, body { height:100%; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height:1.6; display:flex; }
+
+  /* Left panel */
+  aside { width:var(--side); flex-shrink:0; height:100vh; position:sticky; top:0; overflow-y:auto; background:var(--card); border-right:1px solid var(--border); padding:24px 14px; }
+  .brand { display:block; font-size:1.15rem; font-weight:700; color:var(--fg); text-decoration:none; padding:0 10px; }
+  .brand-tag { color:var(--muted); font-size:.82rem; margin:2px 10px 20px; }
+  .nav-label { color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; margin:18px 10px 6px; }
+  nav ul { list-style:none; padding:0; margin:0; display:grid; gap:2px; }
+  nav a { display:block; padding:8px 10px; border-radius:6px; color:var(--fg); text-decoration:none; font-size:.93rem; }
+  nav a:hover { background:var(--bg); }
+  nav a.active { background:var(--active); color:var(--accent); font-weight:600; }
+
+  /* Body content */
+  main { flex:1; min-width:0; height:100vh; display:flex; flex-direction:column; }
+  .viewer-bar { display:none; align-items:center; gap:12px; padding:8px 16px; border-bottom:1px solid var(--border); font-size:.88rem; }
+  .viewer-bar .title { flex:1; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .viewer-bar a, .viewer-bar button { color:var(--accent); background:none; border:1px solid var(--border); border-radius:6px; padding:4px 10px; font:inherit; cursor:pointer; text-decoration:none; }
+  iframe { flex:1; width:100%; border:0; background:#fff; }
+  main.viewing .viewer-bar { display:flex; }
+  main.viewing #home { display:none; }
+
+  #home { overflow-y:auto; }
+  .wrap { max-width:820px; margin:0 auto; padding:48px 24px; }
   h1 { margin:0 0 4px; font-size:2rem; }
   .tag { color:var(--muted); margin:0 0 32px; }
-  ul.posts { list-style:none; padding:0; margin:0; display:grid; gap:14px; }
-  .posts a { display:block; padding:16px 18px; background:var(--card); border:1px solid var(--border); border-radius:10px; text-decoration:none; color:inherit; }
-  .posts a:hover { border-color:var(--accent); }
-  .posts .title { color:var(--accent); font-weight:600; font-size:1.05rem; }
-  .posts .desc { color:var(--muted); font-size:.92rem; margin-top:2px; }
+  .cards { display:grid; gap:14px; }
+  .cards a { display:block; padding:18px 20px; background:var(--card); border:1px solid var(--border); border-radius:10px; text-decoration:none; color:inherit; }
+  .cards a:hover { border-color:var(--accent); }
+  .cards .title { color:var(--accent); font-weight:600; font-size:1.08rem; }
+  .cards .desc { color:var(--muted); font-size:.92rem; margin-top:4px; }
+  .cards .topics { font-size:.82rem; margin-top:8px; color:var(--fg); opacity:.8; }
   footer { margin-top:40px; color:var(--muted); font-size:.85rem; }
+
+  /* Phone: left panel becomes a top bar */
+  @media (max-width: 760px) {
+    body { flex-direction:column; }
+    aside { width:100%; height:auto; position:static; border-right:0; border-bottom:1px solid var(--border); padding:14px 16px; }
+    .brand-tag, .nav-label { display:none; }
+    nav ul { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+    main { height:auto; flex:1; min-height:0; }
+    main.viewing { height:calc(100vh - 110px); }
+    .wrap { padding:28px 16px; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>My Blog</h1>
-  <p class="tag">Notes and guides on development.</p>
 
-  <ul class="posts">
-    <!-- ADD NEW POSTS BELOW: copy one <li> block, change href, title and description -->
-    <li>
-      <a href="Git_Commands_Learning_Guide.html">
-        <div class="title">Git Commands Every Developer Should Know</div>
-        <div class="desc">A learning guide to the essential Git commands.</div>
-      </a>
-    </li>
-  </ul>
+<aside>
+  <a class="brand" href="#">Software Engineer Guide</a>
+  <p class="brand-tag">Notes and guides on development.</p>
+  <nav>
+    <ul><li><a href="#" data-id="">Home</a></li></ul>
+    <div class="nav-label">Guides</div>
+    <ul id="nav-list"></ul>
+  </nav>
+</aside>
 
-  <footer>Add more posts by copying the block above.</footer>
-</div>
+<main id="main">
+  <div class="viewer-bar">
+    <button type="button" onclick="goBack()">&larr; Back</button>
+    <span class="title" id="viewer-title"></span>
+    <a id="viewer-open" href="#" target="_blank" rel="noopener">Open in new tab</a>
+  </div>
+
+  <section id="home">
+    <div class="wrap">
+      <h1>Software Engineer Guide</h1>
+      <p class="tag">A collection of hands-on guides and lessons from real development work. Pick a guide from the left panel or from the summaries below.</p>
+      <div class="cards" id="cards"></div>
+      <footer>To add a guide, add an entry to the <code>POSTS</code> list in index.html.</footer>
+    </div>
+  </section>
+</main>
+
+<script>
+  // ADD NEW POSTS HERE: id (used in the URL), file, title, summary and topics
+  const POSTS = [
+    {
+      id: "git-commands",
+      file: "Git_Commands_Learning_Guide.html",
+      title: "Git Commands Every Developer Should Know",
+      summary: "A learning guide to the essential Git commands: the everyday workflow, the three reset modes, and when to merge versus rebase, with a cheat sheet for picking the right command.",
+      topics: "status · pull · add · commit · push · reset --soft / --hard · merge · rebase"
+    },
+    {
+      id: "rest-api",
+      file: "REST_API_Engineering_Key_Learnings.html",
+      title: "REST API Engineering: My Key Learnings",
+      summary: "14 lessons from real project work on REST APIs: API-first design with OpenAPI, endpoint design, .NET Minimal APIs, request parameters and headers, validation, async callbacks, Service Bus session queues and BackgroundService.",
+      topics: "OpenAPI · REST · .NET Minimal APIs · Azure Service Bus · Microservices · System design"
+    }
+  ];
+
+  const main = document.getElementById("main");
+  const navList = document.getElementById("nav-list");
+  const cards = document.getElementById("cards");
+  let frame = null;
+
+  for (const p of POSTS) {
+    navList.insertAdjacentHTML("beforeend", `<li><a href="#${p.id}" data-id="${p.id}">${p.title}</a></li>`);
+    cards.insertAdjacentHTML("beforeend",
+      `<a href="#${p.id}"><div class="title">${p.title}</div><div class="desc">${p.summary}</div><div class="topics">${p.topics}</div></a>`);
+  }
+
+  // The URL hash decides what the body shows, so browser Back/Forward work.
+  function render() {
+    const id = decodeURIComponent(location.hash.slice(1));
+    const post = POSTS.find(p => p.id === id);
+
+    document.querySelectorAll("nav a").forEach(a => a.classList.toggle("active", a.dataset.id === (post ? post.id : "")));
+
+    if (frame) { frame.remove(); frame = null; }
+    if (!post) {
+      main.classList.remove("viewing");
+      document.title = "Software Engineer Guide";
+      return;
+    }
+    // A fresh iframe each time keeps history to one entry per page change.
+    frame = document.createElement("iframe");
+    frame.title = post.title;
+    frame.src = post.file;
+    main.appendChild(frame);
+    main.classList.add("viewing");
+    document.getElementById("viewer-title").textContent = post.title;
+    document.getElementById("viewer-open").href = post.file;
+    document.title = post.title + " | Software Engineer Guide";
+  }
+
+  // Back returns to the previous page; if the guide was opened directly, it returns Home.
+  let moves = 0;
+  function goBack() { if (moves > 0) history.back(); else location.hash = ""; }
+
+  window.addEventListener("hashchange", () => { moves++; render(); });
+  render();
+</script>
 </body>
 </html>
