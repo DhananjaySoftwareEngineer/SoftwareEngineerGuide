@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REST API Engineering: My Key Learnings</title>
+<style>
+:root{
+  --bg:#f2f5f7;
+  --paper:#ffffff;
+  --ink:#16222c;
+  --muted:#5a6b78;
+  --line:#d7dfe5;
+  --accent:#1c5fb8;
+  --accent-soft:#e3edfa;
+  --code-bg:#14202b;
+  --code-ink:#dbe6f0;
+  --ok:#1f7a4d; --ok-bg:#e2f4ea;
+  --info:#1c5fb8; --info-bg:#e3edfa;
+  --warn:#9a5b00; --warn-bg:#fdf0d9;
+  --bad:#b0302b; --bad-bg:#fbe5e3;
+  --serif:"Source Serif 4","Source Serif Pro",Georgia,"Times New Roman",serif;
+  --sans:"Inter Tight","Inter","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  --mono:"JetBrains Mono","Cascadia Code",Consolas,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f171e; --paper:#17222b; --ink:#e6edf3; --muted:#93a4b2; --line:#2a3a47;
+    --accent:#6ea8f0; --accent-soft:#1b2e44; --code-bg:#0b1218;
+    --ok:#6fd3a0; --ok-bg:#16322502; --info:#6ea8f0; --info-bg:#1b2e44;
+    --warn:#f0c26a; --warn-bg:#3a2d12; --bad:#f09690; --bad-bg:#3d1d1b;
+    --ok-bg:#163225;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f171e; --paper:#17222b; --ink:#e6edf3; --muted:#93a4b2; --line:#2a3a47;
+  --accent:#6ea8f0; --accent-soft:#1b2e44; --code-bg:#0b1218;
+  --ok:#6fd3a0; --ok-bg:#163225; --info:#6ea8f0; --info-bg:#1b2e44;
+  --warn:#f0c26a; --warn-bg:#3a2d12; --bad:#f09690; --bad-bg:#3d1d1b;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.7}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+.shell{display:grid;grid-template-columns:290px minmax(0,1fr);max-width:1240px;margin:0 auto}
+nav.toc{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:32px 20px 32px 28px;font-family:var(--sans);font-size:14.5px;border-right:1px solid var(--line)}
+nav.toc h2{font-size:15px;margin:0 0 4px;font-weight:700;letter-spacing:.01em}
+nav.toc p{margin:0 0 18px;color:var(--muted);font-size:13px;line-height:1.4}
+nav.toc ol{list-style:none;margin:0;padding:0}
+nav.toc li a{display:grid;grid-template-columns:26px 1fr;gap:4px;padding:6px 8px;margin:1px 0;color:var(--muted);text-decoration:none;border-radius:6px;line-height:1.35}
+nav.toc li a span.n{font-variant-numeric:tabular-nums;color:var(--muted);opacity:.7}
+nav.toc li a:hover{background:var(--accent-soft);color:var(--ink)}
+nav.toc li a.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.theme-btn{margin-top:18px;font:600 13px var(--sans);padding:7px 12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;cursor:pointer}
+
+main{padding:56px 48px 96px;min-width:0}
+header.hero{max-width:720px;margin-bottom:56px}
+header.hero h1{font-family:var(--sans);font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.05;letter-spacing:-.025em;margin:0 0 20px;font-weight:800}
+header.hero p.lede{font-size:1.25rem;line-height:1.55;color:var(--muted);margin:0 0 14px}
+header.hero blockquote{margin:28px 0 0;padding:4px 0 4px 20px;border-left:4px solid var(--accent);font-size:1.15rem;font-style:italic}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+.chip{font:600 13px var(--sans);padding:5px 11px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+
+section.topic{max-width:760px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:34px 38px 30px;margin:0 0 28px}
+section.topic>h2{font-family:var(--sans);font-size:1.6rem;line-height:1.2;letter-spacing:-.015em;margin:0 0 18px;display:flex;gap:14px;align-items:baseline}
+section.topic>h2 .num{font-size:1rem;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:2px 9px;flex:none}
+section.topic h3{font-family:var(--sans);font-size:1.05rem;margin:26px 0 8px}
+p{margin:0 0 1em}
+ul{padding-left:1.25em;margin:0 0 1em}
+li{margin:.3em 0}
+li::marker{color:var(--accent)}
+code{font-family:var(--mono);font-size:.82em;background:var(--accent-soft);color:var(--accent);padding:.12em .4em;border-radius:5px;word-break:break-word}
+pre{background:var(--code-bg);color:var(--code-ink);padding:18px 20px;border-radius:10px;overflow-x:auto;font:14px/1.6 var(--mono);margin:0 0 1.2em}
+pre code{background:none;color:inherit;padding:0;font-size:inherit;word-break:normal}
+pre .k{color:#7fb8ff}.s{color:#9fe0a8}.c{color:#8aa0b3}.p{color:#f3c98b}
+
+.note{border-radius:10px;padding:14px 18px;margin:1.3em 0;font-size:.97rem;line-height:1.6}
+.note b.t{display:block;font-family:var(--sans);font-size:.9rem;margin-bottom:2px}
+.note.tip{background:var(--info-bg)}.note.tip b.t{color:var(--info)}
+.note.warn{background:var(--warn-bg)}.note.warn b.t{color:var(--warn)}
+.note.key{background:var(--ok-bg)}.note.key b.t{color:var(--ok)}
+
+.urlbar{font:600 clamp(13px,2.6vw,17px) var(--mono);background:var(--code-bg);color:var(--code-ink);padding:16px 18px;border-radius:10px;overflow-x:auto;white-space:nowrap;margin:0 0 1.2em}
+.urlbar span{padding:2px 6px;border-radius:5px}
+.urlbar .a{background:#2b4a73}.urlbar .b{background:#2d5f4a}.urlbar .c2{background:#6a4a2a}.urlbar .d{background:#5b3a6b}
+
+.table-wrap{overflow-x:auto;margin:0 0 1.2em;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:.95rem;min-width:520px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{background:var(--accent-soft);color:var(--ink);font-size:.85rem}
+td.m{font-family:var(--mono);font-weight:700;white-space:nowrap}
+
+.sc{display:inline-block;min-width:3.2em;text-align:center;font:700 .9rem var(--mono);padding:2px 8px;border-radius:6px}
+.sc.s2{background:var(--ok-bg);color:var(--ok)}
+.sc.s4{background:var(--warn-bg);color:var(--warn)}
+.sc.s5{background:var(--bad-bg);color:var(--bad)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;font-family:var(--sans)}
+.filters button{font:600 13px var(--sans);padding:6px 13px;border-radius:99px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .filters button[aria-pressed="true"]{color:#0b1218}}
+:root[data-theme="dark"] .filters button[aria-pressed="true"]{color:#0b1218}
+
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 1.2em}
+.compare>div{border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-family:var(--sans);font-size:.95rem;line-height:1.55}
+.compare h4{margin:0 0 6px;font-size:1rem}
+.compare .q{font-style:italic;color:var(--muted)}
+
+ol.flow{list-style:none;counter-reset:f;padding:0;margin:0 0 1.2em;font-family:var(--sans);font-size:.97rem}
+ol.flow li{counter-increment:f;position:relative;padding:0 0 18px 48px;margin:0}
+ol.flow li::before{content:counter(f);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;display:grid;place-items:center}
+ol.flow li::after{content:"";position:absolute;left:15px;top:34px;bottom:2px;width:2px;background:var(--line)}
+ol.flow li:last-child::after{display:none}
+ol.flow li:last-child{padding-bottom:0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) ol.flow li::before{color:#0b1218}}
+:root[data-theme="dark"] ol.flow li::before{color:#0b1218}
+
+.qlist{list-style:none;padding:0;margin:0 0 1em}
+.qlist li{padding:10px 0 10px 18px;border-left:3px solid var(--accent);margin:8px 0;background:var(--accent-soft);border-radius:0 8px 8px 0;font-family:var(--sans);font-size:.98rem}
+
+.jwt{font:600 clamp(12px,2.4vw,15px) var(--mono);background:var(--code-bg);padding:16px 18px;border-radius:10px;margin:0 0 .6em;overflow-x:auto;white-space:nowrap}
+.jwt .h{color:#f09690}.jwt .p2{color:#c9a7f5}.jwt .sg{color:#7fd8f0}.jwt .dot{color:#8aa0b3}
+.jwt-legend{display:flex;flex-wrap:wrap;gap:14px;font:600 13px var(--sans);margin:0 0 1.2em}
+.jwt-legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 1.2em}
+.split pre{margin:0;font-size:13px}
+.split h4{font:700 .9rem var(--sans);margin:0 0 6px}
+@media (max-width:700px){.split{grid-template-columns:1fr}}
+.closing{max-width:760px;margin-top:40px;font-size:1.3rem;line-height:1.5;font-weight:600;font-family:var(--sans);border-top:3px solid var(--ink);padding-top:22px}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  nav.toc{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:22px 20px}
+  nav.toc ol{columns:2}
+  main{padding:32px 18px 64px}
+  section.topic{padding:24px 20px}
+  .compare{grid-template-columns:1fr}
+}
+@media (max-width:520px){nav.toc ol{columns:1}body{font-size:17px}}
+@media print{
+  nav.toc,.theme-btn,.filters{display:none}
+  .shell{display:block}body{background:#fff;color:#000;font-size:12pt}
+  section.topic{border:1px solid #bbb;break-inside:avoid-page;box-shadow:none}
+  pre{white-space:pre-wrap}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav class="toc" aria-label="Contents">
+  <h2>REST API Engineering</h2>
+  <p>14 lessons from real project work</p>
+  <ol>
+    <li><a href="#t1"><span class="n">1</span>API-first with OpenAPI</a></li>
+    <li><a href="#t2"><span class="n">2</span>Designing RESTful endpoints</a></li>
+    <li><a href="#t3"><span class="n">3</span>Catch-all routing</a></li>
+    <li><a href="#t4"><span class="n">4</span>.NET Minimal APIs</a></li>
+    <li><a href="#t5"><span class="n">5</span>Parameters, headers &amp; correlation IDs</a></li>
+    <li><a href="#t6"><span class="n">6</span>Async communication with callbacks</a></li>
+    <li><a href="#t7"><span class="n">7</span>Validation</a></li>
+    <li><a href="#t8"><span class="n">8</span>Data modelling</a></li>
+    <li><a href="#t9"><span class="n">9</span>HTTP methods</a></li>
+    <li><a href="#t10"><span class="n">10</span>Responses &amp; status codes</a></li>
+    <li><a href="#t11"><span class="n">11</span>Authentication, authorization &amp; JWT</a></li>
+    <li><a href="#t12"><span class="n">12</span>Service Bus session queues</a></li>
+    <li><a href="#t13"><span class="n">13</span>BackgroundService</a></li>
+    <li><a href="#t14"><span class="n">14</span>Engineering is about details</a></li>
+  </ol>
+  <button class="theme-btn" id="themeBtn" type="button">Toggle dark mode</button>
+</nav>
+
+<main>
+<header class="hero">
+  <h1>REST API Engineering: My Key Learnings</h1>
+  <p class="lede">Notes from a project where I explored REST API development in depth and questioned every small design decision: API contracts, HTTP status codes, asynchronous communication, authentication and background processing.</p>
+  <p class="lede">Small choices can affect security, scalability, maintainability and downstream systems. These are the lessons that stayed with me.</p>
+  <blockquote>Sometimes the biggest learning comes not from writing code, but from questioning every small design decision behind it.</blockquote>
+  <div class="chips" aria-label="Topics">
+    <span class="chip">.NET Minimal APIs</span><span class="chip">REST</span><span class="chip">OpenAPI</span><span class="chip">Azure Service Bus</span><span class="chip">Microservices</span><span class="chip">System design</span>
+  </div>
+</header>
+
+<!-- 1 -->
+<section class="topic" id="t1">
+  <h2><span class="num">1</span>API-first development with OpenAPI</h2>
+  <p>Before implementing a REST API, define its contract. In our project this meant writing an <code>openapi.yaml</code> file along with matching <code>test.http</code> files.</p>
+  <p>An OpenAPI contract defines the API's structure:</p>
+  <ul>
+    <li>URL patterns and HTTP methods</li>
+    <li>Path parameters, query parameters and headers</li>
+    <li>Request payloads and response schemas</li>
+    <li>Required and optional fields</li>
+    <li>Expected HTTP status codes</li>
+  </ul>
+  <div class="note key"><b class="t">Why it matters</b>The contract is a clear agreement between API consumers and providers, settled before implementation begins.</div>
+</section>
+
+<!-- 2 -->
+<section class="topic" id="t2">
+  <h2><span class="num">2</span>Designing RESTful API endpoints</h2>
+  <p>A REST API should communicate its intent through its HTTP method and a resource-oriented URL.</p>
+  <ul>
+    <li>Represent resources with <strong>nouns, not verbs</strong>.</li>
+    <li>Collection endpoints typically use <strong>plural nouns</strong>; individual resources are identified by their IDs.</li>
+    <li><strong>Version your API</strong> so it can evolve while staying compatible with existing consumers.</li>
+  </ul>
+  <p>The URL structure we followed:</p>
+  <div class="urlbar" role="img" aria-label="URL pattern: api, version, area, resource, endpoint">
+    <span class="a">/api</span>/<span class="b">{version}</span>/<span class="c2">{area}</span>/<span class="d">{resource}</span>/{endpoint}
+  </div>
+  <p>The exact structure depends on a project's conventions. Consistency and clarity are what matter.</p>
+</section>
+
+<!-- 3 -->
+<section class="topic" id="t3">
+  <h2><span class="num">3</span>Catch-all routing in Minimal APIs</h2>
+  <p>A catch-all route captures the remaining path segments, so one route can handle many function paths:</p>
+<pre><code>{enterpriseId}/{siteId}/{productId}/{**functionPath}</code></pre>
+  <p>The <code>{**functionPath}</code> parameter swallows everything after <code>productId</code>. This helps when an API must support flexible downstream function paths without a separate route for every variation.</p>
+  <div class="note warn"><b class="t">Trade-off</b>Flexible routing needs careful validation and authorization so that only permitted operations can be invoked.</div>
+</section>
+
+<!-- 4 -->
+<section class="topic" id="t4">
+  <h2><span class="num">4</span>My first hands-on experience with .NET Minimal APIs</h2>
+  <p>Minimal APIs define HTTP endpoints concisely, without the traditional controller-based structure.</p>
+<pre><code><span class="k">RouteGroupBuilder</span> group = app.MapGroup(<span class="s">"/items"</span>)
+    .WithTags(<span class="s">"Items"</span>)
+    .AddEndpointFilter&lt;<span class="k">ValidationFilter</span>&gt;();</code></pre>
+  <p>Once the group is configured, define endpoints with <code>MapGet</code>, <code>MapPost</code>, <code>MapPut</code>, <code>MapPatch</code> and <code>MapDelete</code>.</p>
+  <p>Dependency injection works directly through endpoint parameters, including services marked with <code>[FromServices]</code>. Endpoint definitions stay short while still supporting validation, DI and other cross-cutting concerns.</p>
+</section>
+
+<!-- 5 -->
+<section class="topic" id="t5">
+  <h2><span class="num">5</span>Request parameters, headers and correlation IDs</h2>
+  <p>Defining a single request parameter takes real thought. Ask:</p>
+  <ul class="qlist">
+    <li>Is it mandatory or optional?</li>
+    <li>Can it be null?</li>
+    <li>Should it be a string, a GUID or another type?</li>
+    <li>What happens if the client does not provide it?</li>
+    <li>Should the server generate a value when it is missing?</li>
+  </ul>
+
+  <h3>Where should a parameter go? Path, query, header or body</h3>
+  <p>Once you know what a parameter is, decide where it travels. The HTTP request has four places for data, and each has a different purpose. Choosing the wrong one hurts caching, security, logging and readability.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Location</th><th>What it expresses</th><th>Use it when</th><th>Example</th></tr>
+    <tr><td><strong>Path</strong></td><td>Which resource</td><td>The value identifies the resource. It is required, and without it the URL means something else.</td><td class="m">/orders/{orderId}</td></tr>
+    <tr><td><strong>Query</strong></td><td>How to view the resource or collection</td><td>The value filters, sorts, pages, searches or shapes the result. It is usually optional.</td><td class="m">?status=pending&amp;page=2</td></tr>
+    <tr><td><strong>Header</strong></td><td>Metadata about the request</td><td>The value describes the request itself, not the business data: auth, tracing, content negotiation, idempotency, concurrency.</td><td class="m">Authorization: Bearer ...</td></tr>
+    <tr><td><strong>Body</strong></td><td>The data being sent</td><td>You are creating or changing something (POST, PUT, PATCH), or the payload is large or nested.</td><td class="m">{ "name": "..." }</td></tr>
+  </table></div>
+
+  <h3>When to use a query parameter</h3>
+  <p>A query parameter <strong>refines what you get back</strong> from a resource or collection without changing which resource it is. <code>/orders</code> is still the orders collection; the query string only decides which slice of it you see.</p>
+  <ul>
+    <li><strong>Filtering:</strong> <code>?status=pending&amp;customerId=42</code></li>
+    <li><strong>Sorting:</strong> <code>?sort=createdAt&amp;order=desc</code></li>
+    <li><strong>Pagination:</strong> <code>?page=2&amp;pageSize=20</code> or <code>?cursor=abc</code></li>
+    <li><strong>Searching:</strong> <code>?q=laptop</code></li>
+    <li><strong>Shaping the response:</strong> <code>?fields=id,name</code> or <code>?include=items</code></li>
+  </ul>
+  <p><strong>Why it fits:</strong> GET requests have no body by convention, so query parameters are how a GET carries options. Because they are part of the URL, they are visible, bookmarkable, shareable and part of the cache key. Two different query strings are treated as two different cacheable responses.</p>
+  <div class="note warn"><b class="t">Avoid</b>Do not put secrets (tokens, passwords, API keys) in the query string. URLs end up in browser history, server and proxy logs, analytics and referrer headers. Do not use query parameters for required identifiers (use the path) or to name an action such as <code>?delete=true</code> (use the HTTP method).</div>
+
+  <h3>When to use a header parameter</h3>
+  <p>A header carries <strong>information about the request rather than about the business data</strong>. It is typically cross-cutting: it applies to many or all endpoints and is often handled by middleware, an API gateway or a filter before your endpoint code runs.</p>
+  <ul>
+    <li><strong>Authentication:</strong> <code>Authorization: Bearer &lt;token&gt;</code></li>
+    <li><strong>Content negotiation:</strong> <code>Content-Type</code>, <code>Accept</code>, <code>Accept-Language</code></li>
+    <li><strong>Tracing and observability:</strong> <code>X-Correlation-Id</code>, <code>traceparent</code></li>
+    <li><strong>Idempotency:</strong> <code>Idempotency-Key</code> so a retried POST does not create a duplicate</li>
+    <li><strong>Concurrency and caching:</strong> <code>If-Match</code>, <code>ETag</code>, <code>If-None-Match</code></li>
+    <li><strong>Request context:</strong> values such as a calling application's request ID that every request must carry</li>
+  </ul>
+  <p><strong>Why it fits:</strong> headers keep the URL clean and stable, stay out of browsing history and most URL logs, and let every endpoint share the same handling for common concerns. That is why credentials belong in a header and never in the URL.</p>
+  <div class="note warn"><b class="t">Avoid</b>Do not hide business data in headers. If a value is something a consumer would reasonably filter by or identify a resource with, it belongs in the path, query or body. Headers are also less visible to consumers, so every custom header must be documented in the OpenAPI contract. Custom headers that vary the response need a <code>Vary</code> header to stay cache-safe.</div>
+
+  <h3>A quick decision guide</h3>
+  <ul class="qlist">
+    <li>Does it identify <em>which</em> resource? Use the <strong>path</strong>.</li>
+    <li>Does it filter, sort, page or shape the <em>result</em>? Use a <strong>query</strong> parameter.</li>
+    <li>Is it metadata about the request that applies across endpoints (auth, tracing, idempotency, content type)? Use a <strong>header</strong>.</li>
+    <li>Is it the data being created or changed, or large and nested? Use the <strong>body</strong>.</li>
+    <li>Is it sensitive? Never the URL. Use a <strong>header</strong> or the <strong>body</strong>.</li>
+  </ul>
+  <p>A useful test: if changing the value gives you a <em>different resource</em>, it belongs in the path. If it gives you a <em>different view of the same resource</em>, it is a query parameter. If it describes <em>how the request is being made</em>, it is a header.</p>
+
+  <h3>How it looks in a Minimal API</h3>
+<pre><code>app.MapGet(<span class="s">"/orders/{orderId:guid}"</span>, (
+    <span class="k">Guid</span>    orderId,                                          <span class="c">// path: which order</span>
+    [<span class="k">FromQuery</span>] <span class="k">string</span>? include,                          <span class="c">// query: optional, shapes the result</span>
+    [<span class="k">FromHeader</span>(Name = <span class="s">"X-Correlation-Id"</span>)] <span class="k">Guid</span>? correlationId <span class="c">// header: request metadata</span>
+) =&gt; Results.Ok());</code></pre>
+  <p>In the OpenAPI contract, the same choice is declared with the <code>in</code> field:</p>
+<pre><code>parameters:
+  - name: orderId
+    in: path          <span class="c"># required, identifies the resource</span>
+    required: true
+    schema: { type: string, format: uuid }
+  - name: status
+    in: query         <span class="c"># optional filter</span>
+    required: false
+    schema: { type: string }
+  - name: X-Correlation-Id
+    in: header        <span class="c"># request metadata</span>
+    required: false
+    schema: { type: string, format: uuid }</code></pre>
+
+  <h3>X-Correlation-Id</h3>
+  <p>A correlation ID traces a request across multiple services and makes troubleshooting distributed systems easier. When an incoming correlation ID is accepted, propagate it consistently through the whole processing flow.</p>
+  <div class="note tip"><b class="t">About the X- prefix</b>It was historically common for custom HTTP headers, but RFC 6648 deprecated the recommendation to use it for newly defined parameters. Existing conventions can still be used when a project's contract requires them.</div>
+
+  <h3>Three identifiers worth knowing</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Identifier</th><th>What it does</th></tr>
+    <tr><td class="m">CorrelationId</td><td>Connects related operations and helps trace a request across services.</td></tr>
+    <tr><td class="m">CausationId</td><td>Identifies the event or message that caused the current event or operation. In event-driven systems it helps reconstruct the chain of actions behind a particular operation.</td></tr>
+    <tr><td class="m">ApplicationRequestId</td><td>In our project, identifies the originating application's request context and is a mandatory part of the request contract. Its precise meaning depends on the system's design.</td></tr>
+  </table></div>
+  <p>These look like small details, but they are central to observability, debugging and distributed workflows.</p>
+</section>
+
+<!-- 6 -->
+<section class="topic" id="t6">
+  <h2><span class="num">6</span>Asynchronous communication using callback URLs</h2>
+  <p>When processing takes seconds or minutes and the client does not need an immediate result, there are two broad options.</p>
+  <div class="compare">
+    <div><h4>Polling</h4>The client repeatedly asks whether the result is ready. Frequent polling creates unnecessary traffic and increases server load.</div>
+    <div><h4>Callback</h4>The client provides a URL and the server notifies it when processing is done. This reduces polling and is more efficient.</div>
+  </div>
+  <h3>The callback flow</h3>
+  <ol class="flow">
+    <li>The client submits a request and provides a callback URL.</li>
+    <li>The server accepts the request and processes it asynchronously.</li>
+    <li>When processing completes, the server notifies the client through the callback URL.</li>
+    <li>The client retrieves the result through an appropriate endpoint, if required.</li>
+  </ol>
+  <div class="note warn"><b class="t">Security considerations</b>
+    <ul style="margin:.4em 0 0">
+      <li>Validate callback URLs to prevent server-side request forgery (SSRF).</li>
+      <li>Authenticate callback notifications and protect them against replay attacks.</li>
+      <li>Never expose sensitive information in callback URLs or query parameters.</li>
+    </ul>
+  </div>
+  <p>Detailed, interview-style discussions with a senior architect on these scenarios clarified many questions and deepened my understanding of the trade-offs.</p>
+</section>
+
+<!-- 7 -->
+<section class="topic" id="t7">
+  <h2><span class="num">7</span>Validation is not optional</h2>
+  <p>Validate incoming data as early as possible, and enforce the right rules at every relevant trust boundary. That includes:</p>
+  <ul>
+    <li>Required fields</li>
+    <li>Data types</li>
+    <li>Allowed values</li>
+    <li>Business rules</li>
+    <li>Authorization requirements</li>
+  </ul>
+  <div class="note key"><b class="t">Rule of thumb</b>The earlier invalid data is rejected, the less unnecessary processing happens downstream.</div>
+</section>
+
+<!-- 8 -->
+<section class="topic" id="t8">
+  <h2><span class="num">8</span>Data modelling: required vs. optional fields</h2>
+  <p>One of the most important lessons for me. Marking a field optional instead of required can look like a minor implementation detail. In reality it can change the meaning of the contract and affect database integrity, business logic and downstream consumers.</p>
+  <p>A good data model clearly defines:</p>
+  <ul>
+    <li>Which fields are mandatory</li>
+    <li>Which fields are optional or nullable</li>
+    <li>What each field represents</li>
+    <li>Which constraints must always be satisfied</li>
+  </ul>
+  <div class="note tip"><b class="t">A practice worth copying</b>Examine historical database records before deciding how an attribute should behave. Understanding existing data, how it has been used, and how it relates to downstream systems leads to better modelling decisions. It is data-driven analysis and reverse engineering that prevents unintended changes to established behaviour.</div>
+</section>
+
+<!-- 9 -->
+<section class="topic" id="t9">
+  <h2><span class="num">9</span>Understanding HTTP methods</h2>
+  <p>Each method communicates a different intention. Choosing the right one makes an API more predictable and easier to consume.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Method</th><th>Intent</th><th>Idempotent?</th></tr>
+    <tr><td class="m">GET</td><td>Retrieves a resource without intending to modify it.</td><td>Yes (safe)</td></tr>
+    <tr><td class="m">POST</td><td>Submits data to create a resource or trigger an operation.</td><td>No</td></tr>
+    <tr><td class="m">PUT</td><td>Creates or replaces the state of a resource at a specified URI.</td><td>Generally yes</td></tr>
+    <tr><td class="m">PATCH</td><td>Applies partial modifications to an existing resource.</td><td>Not guaranteed</td></tr>
+    <tr><td class="m">DELETE</td><td>Requests removal of a resource.</td><td>Generally yes</td></tr>
+  </table></div>
+</section>
+
+<!-- 10 -->
+<section class="topic" id="t10">
+  <h2><span class="num">10</span>Response design and HTTP status codes</h2>
+  <p>A good response is clear, consistent and minimal. JSON is the common format, and the body should carry only what the client needs. Headers provide useful metadata, such as correlation identifiers.</p>
+
+  <h3>Status code reference</h3>
+  <div class="filters" role="group" aria-label="Filter status codes">
+    <button type="button" aria-pressed="true" data-f="all">All</button>
+    <button type="button" aria-pressed="false" data-f="2">2xx Success</button>
+    <button type="button" aria-pressed="false" data-f="4">4xx Client error</button>
+    <button type="button" aria-pressed="false" data-f="5">5xx Server error</button>
+  </div>
+  <div class="table-wrap"><table id="codes">
+    <tr><th>Code</th><th>Meaning</th></tr>
+    <tr data-g="2"><td><span class="sc s2">200</span></td><td><strong>OK</strong>: the request completed successfully.</td></tr>
+    <tr data-g="2"><td><span class="sc s2">201</span></td><td><strong>Created</strong>: a resource was successfully created.</td></tr>
+    <tr data-g="2"><td><span class="sc s2">202</span></td><td><strong>Accepted</strong>: the request was accepted for processing, but processing has not necessarily completed.</td></tr>
+    <tr data-g="2"><td><span class="sc s2">204</span></td><td><strong>No Content</strong>: the request succeeded and no response body is returned.</td></tr>
+    <tr data-g="4"><td><span class="sc s4">400</span></td><td><strong>Bad Request</strong>: the request is invalid or cannot be processed due to a client-side error.</td></tr>
+    <tr data-g="4"><td><span class="sc s4">401</span></td><td><strong>Unauthorized</strong>: valid authentication credentials are missing or invalid.</td></tr>
+    <tr data-g="4"><td><span class="sc s4">403</span></td><td><strong>Forbidden</strong>: the client is not permitted to perform the requested operation.</td></tr>
+    <tr data-g="4"><td><span class="sc s4">404</span></td><td><strong>Not Found</strong>: the requested resource was not found.</td></tr>
+    <tr data-g="4"><td><span class="sc s4">408</span></td><td><strong>Request Timeout</strong>: the server did not receive the complete request in the time it was willing to wait.</td></tr>
+    <tr data-g="4"><td><span class="sc s4">409</span></td><td><strong>Conflict</strong>: the request conflicts with the current state of the resource.</td></tr>
+    <tr data-g="4"><td><span class="sc s4">422</span></td><td><strong>Unprocessable Content</strong>: the content is understood but cannot be processed semantically.</td></tr>
+    <tr data-g="5"><td><span class="sc s5">500</span></td><td><strong>Internal Server Error</strong>: an unexpected server-side error occurred.</td></tr>
+    <tr data-g="5"><td><span class="sc s5">504</span></td><td><strong>Gateway Timeout</strong>: a gateway or proxy did not receive a timely response from an upstream server.</td></tr>
+  </table></div>
+
+  <h3>408 vs. 504: a useful distinction</h3>
+  <div class="compare">
+    <div><h4><span class="sc s4">408</span> Request Timeout</h4>The server did not receive the <em>complete request</em> within the time it was willing to wait.<div class="q">The problem is on the way in from the client.</div></div>
+    <div><h4><span class="sc s5">504</span> Gateway Timeout</h4>A gateway or proxy did not receive a timely response from an <em>upstream server</em>.<div class="q">The problem is between the gateway and the server behind it.</div></div>
+  </div>
+  <div class="note key"><b class="t">Takeaway</b>The right status code tells the client what actually happened and helps it respond appropriately.</div>
+</section>
+
+<!-- 11 -->
+<section class="topic" id="t11">
+  <h2><span class="num">11</span>Authentication and authorization (with JWT)</h2>
+  <div class="compare">
+    <div><h4>Authentication</h4><div class="q">Who are you?</div>Failure returns <span class="sc s4">401</span></div>
+    <div><h4>Authorization</h4><div class="q">What are you allowed to do?</div>Failure returns <span class="sc s4">403</span></div>
+  </div>
+  <p>Both are essential for secure APIs, particularly when multiple applications and services interact. Security has to be considered throughout the request lifecycle, not added as an afterthought.</p>
+  <div class="note tip"><b class="t">About this subsection</b>The JWT material below is general knowledge based on RFC 7519 and common .NET practice. It is not specific to any one project.</div>
+
+  <h3>What is a JWT?</h3>
+  <p>A JSON Web Token is a compact, URL-safe string that carries claims about a user or client. The server signs it, so any later tampering can be detected. A JWT has three parts separated by dots:</p>
+  <div class="jwt" role="img" aria-label="JWT structure: header dot payload dot signature"><span class="h">eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9</span><span class="dot">.</span><span class="p2">eyJzdWIiOiIxMjMiLCJyb2xlIjoiYWRtaW4ifQ</span><span class="dot">.</span><span class="sg">Gk3x9...signature-bytes...Zq1</span></div>
+  <div class="jwt-legend"><span><i style="background:#f09690"></i>Header</span><span><i style="background:#c9a7f5"></i>Payload (claims)</span><span><i style="background:#7fd8f0"></i>Signature</span></div>
+
+  <div class="split">
+    <div><h4>Header</h4>
+<pre><code>{
+  "alg": "RS256",
+  "typ": "JWT",
+  "kid": "key-2026-01"
+}</code></pre></div>
+    <div><h4>Payload</h4>
+<pre><code>{
+  "iss": "https://auth.example.com",
+  "sub": "user-123",
+  "aud": "orders-api",
+  "exp": 1760000900,
+  "iat": 1760000000,
+  "role": "admin"
+}</code></pre></div>
+  </div>
+  <div class="note warn"><b class="t">Encoded, not encrypted</b>The header and payload are only Base64URL-encoded. Anyone holding the token can read them. The signature gives <strong>integrity</strong> (it was not changed) and <strong>authenticity</strong> (the right issuer made it), not secrecy. Never put passwords or sensitive personal data in a JWT.</div>
+
+  <h3>Common claims</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Claim</th><th>Meaning</th></tr>
+    <tr><td class="m">iss</td><td>Issuer: who created and signed the token.</td></tr>
+    <tr><td class="m">sub</td><td>Subject: the user or client the token represents.</td></tr>
+    <tr><td class="m">aud</td><td>Audience: the API the token is intended for.</td></tr>
+    <tr><td class="m">exp</td><td>Expiry time (Unix seconds). The token is invalid after this.</td></tr>
+    <tr><td class="m">nbf</td><td>Not before: the token is invalid until this time.</td></tr>
+    <tr><td class="m">iat</td><td>Issued-at time.</td></tr>
+    <tr><td class="m">jti</td><td>Unique token ID, useful for revocation and replay detection.</td></tr>
+    <tr><td class="m">role / scope</td><td>Custom claims used for authorization decisions.</td></tr>
+  </table></div>
+
+  <h3>How the signature is created</h3>
+  <p>The signing input is the encoded header and encoded payload joined by a dot. The issuer signs it with a key:</p>
+<pre><code><span class="c">// HS256 (symmetric: one shared secret)</span>
+signature = HMAC_SHA256( secret, base64url(header) + <span class="s">"."</span> + base64url(payload) )
+
+<span class="c">// RS256 (asymmetric: private key signs, public key verifies)</span>
+signature = RSA_SHA256_Sign( privateKey, base64url(header) + <span class="s">"."</span> + base64url(payload) )
+
+token = base64url(header) + <span class="s">"."</span> + base64url(payload) + <span class="s">"."</span> + base64url(signature)</code></pre>
+
+  <div class="table-wrap"><table>
+    <tr><th>Approach</th><th>Algorithms</th><th>Who needs which key</th><th>Best for</th></tr>
+    <tr><td><strong>Symmetric</strong></td><td class="m">HS256</td><td>The same secret both signs and verifies, so every verifying API must hold the secret.</td><td>A single application that issues and validates its own tokens.</td></tr>
+    <tr><td><strong>Asymmetric</strong></td><td class="m">RS256, ES256</td><td>Only the issuer holds the private key. APIs verify with the public key, often fetched from a JWKS endpoint.</td><td>Multiple APIs and services, or a separate identity provider.</td></tr>
+  </table></div>
+
+  <h3>Generation: what the server does at login</h3>
+  <ol class="flow">
+    <li><strong>Authenticate.</strong> The client sends credentials (or an authorization code). The server verifies them against its user store or identity provider.</li>
+    <li><strong>Build the claims.</strong> Add <code>sub</code>, <code>iss</code>, <code>aud</code>, and the roles or scopes the user is entitled to.</li>
+    <li><strong>Set the time limits.</strong> Add <code>iat</code>, <code>nbf</code> and a short <code>exp</code>, such as 5 to 15 minutes for an access token.</li>
+    <li><strong>Sign.</strong> Encode the header and payload, then sign them with the secret or private key. Keep that key in a vault such as Azure Key Vault, never in source code.</li>
+    <li><strong>Return the token.</strong> Send the access token to the client, usually with a longer-lived refresh token so the user need not log in again.</li>
+  </ol>
+<pre><code><span class="c">// .NET: generating a JWT</span>
+<span class="k">var</span> claims = <span class="k">new</span>[]
+{
+    <span class="k">new</span> Claim(JwtRegisteredClaimNames.Sub, user.Id),
+    <span class="k">new</span> Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+    <span class="k">new</span> Claim(ClaimTypes.Role, <span class="s">"admin"</span>)
+};
+
+<span class="k">var</span> key   = <span class="k">new</span> SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretFromKeyVault));
+<span class="k">var</span> creds = <span class="k">new</span> SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+<span class="k">var</span> token = <span class="k">new</span> JwtSecurityToken(
+    issuer:             <span class="s">"https://auth.example.com"</span>,
+    audience:           <span class="s">"orders-api"</span>,
+    claims:             claims,
+    notBefore:          DateTime.UtcNow,
+    expires:            DateTime.UtcNow.AddMinutes(15),
+    signingCredentials: creds);
+
+<span class="k">return new</span> JwtSecurityTokenHandler().WriteToken(token);</code></pre>
+
+  <h3>Validation: what the API does on every request</h3>
+  <p>The client sends the token in the header <code>Authorization: Bearer &lt;token&gt;</code>. The API does not call the issuer for each request. It checks the token itself:</p>
+  <ol class="flow">
+    <li><strong>Extract.</strong> Read the Bearer token from the <code>Authorization</code> header and split it into three parts. If it is missing or malformed, return <code>401</code>.</li>
+    <li><strong>Check the algorithm.</strong> Read <code>alg</code> from the header and accept only the algorithms you expect. Reject <code>none</code>, and never let the token choose how it is verified.</li>
+    <li><strong>Find the key.</strong> Use the <code>kid</code> header to pick the right key. For asymmetric tokens, fetch and cache the issuer's public keys (JWKS).</li>
+    <li><strong>Verify the signature.</strong> Recompute the signature over <code>header.payload</code> and compare it with the one in the token. For RS256, verify with the public key. If it does not match, the token was altered or forged.</li>
+    <li><strong>Validate the claims.</strong> Check the token is within <code>nbf</code> and <code>exp</code>, that <code>iss</code> is a trusted issuer, and that <code>aud</code> is this API.</li>
+    <li><strong>Build the identity.</strong> Create the user principal from the claims. Authentication has now succeeded.</li>
+    <li><strong>Authorize.</strong> Check the roles, scopes or policy the endpoint needs. If the user lacks them, return <code>403</code>.</li>
+  </ol>
+
+  <div class="table-wrap"><table>
+    <tr><th>Check</th><th>Protects against</th><th>Failure result</th></tr>
+    <tr><td>Signature</td><td>Tampered or forged tokens</td><td><span class="sc s4">401</span></td></tr>
+    <tr><td>exp / nbf</td><td>Expired or not-yet-valid tokens, and long-term replay</td><td><span class="sc s4">401</span></td></tr>
+    <tr><td>iss</td><td>Tokens from an untrusted issuer</td><td><span class="sc s4">401</span></td></tr>
+    <tr><td>aud</td><td>A token meant for another API being reused here</td><td><span class="sc s4">401</span></td></tr>
+    <tr><td>Role, scope or policy</td><td>Valid users doing things they are not allowed to do</td><td><span class="sc s4">403</span></td></tr>
+  </table></div>
+
+<pre><code><span class="c">// .NET Minimal API: configuring validation</span>
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =&gt;
+    {
+        options.TokenValidationParameters = <span class="k">new</span> TokenValidationParameters
+        {
+            ValidateIssuer           = <span class="k">true</span>,
+            ValidIssuer              = <span class="s">"https://auth.example.com"</span>,
+            ValidateAudience         = <span class="k">true</span>,
+            ValidAudience            = <span class="s">"orders-api"</span>,
+            ValidateLifetime         = <span class="k">true</span>,
+            ValidateIssuerSigningKey = <span class="k">true</span>,
+            IssuerSigningKey         = key,
+            ValidAlgorithms          = <span class="k">new</span>[] { SecurityAlgorithms.HmacSha256 },
+            ClockSkew                = TimeSpan.FromMinutes(1)
+        };
+    });
+
+builder.Services.AddAuthorization(o =&gt;
+    o.AddPolicy(<span class="s">"AdminOnly"</span>, p =&gt; p.RequireRole(<span class="s">"admin"</span>)));
+
+<span class="k">var</span> app = builder.Build();
+app.UseAuthentication();   <span class="c">// who are you? (validates the JWT)</span>
+app.UseAuthorization();    <span class="c">// what may you do? (checks the policy)</span>
+
+app.MapGroup(<span class="s">"/orders"</span>)
+   .RequireAuthorization(<span class="s">"AdminOnly"</span>)
+   .MapGet(<span class="s">"/"</span>, () =&gt; Results.Ok());</code></pre>
+
+  <h3>Best practices</h3>
+  <ul>
+    <li>Use <strong>HTTPS only</strong>. A bearer token works for anyone who holds it.</li>
+    <li>Keep access tokens <strong>short-lived</strong> and use refresh tokens to renew them. A stolen JWT stays valid until it expires, because the API does not ask the issuer on each call.</li>
+    <li>Always validate <strong>signature, expiry, issuer and audience</strong>. Skipping any one is a common vulnerability.</li>
+    <li>Restrict the accepted algorithms, and reject <code>alg: none</code>.</li>
+    <li>Store signing keys in a vault, and rotate them using <code>kid</code>.</li>
+    <li>Prefer asymmetric signing when several services validate tokens, so they never hold a signing secret.</li>
+    <li>Keep payloads small and free of sensitive data. Authorize from claims, but re-check anything critical on the server.</li>
+    <li>Plan for revocation (for example <code>jti</code> deny-lists, token introspection, or refresh-token revocation), since a self-contained JWT cannot be recalled before <code>exp</code>.</li>
+  </ul>
+  <div class="note key"><b class="t">In one line</b>Generation is "authenticate, build claims, sign". Validation is "verify the signature, check the claims, then authorize". The API never trusts a token's contents until the signature checks out.</div>
+</section>
+
+<!-- 12 -->
+<section class="topic" id="t12">
+  <h2><span class="num">12</span>Azure Service Bus session queues</h2>
+  <p>Session-based messaging was one of the most interesting concepts I met. I had worked with microservices before, but session queues introduced a different way of thinking about service communication.</p>
+  <h3>The scenario</h3>
+  <p>One component was cloud-hosted. Another ran as a Windows Service and did not expose a REST API. How could they communicate reliably? Azure Service Bus offered a messaging-based solution.</p>
+  <h3>How sessions work</h3>
+  <ul>
+    <li>Messages carrying the same <strong>session ID</strong> are grouped and processed in order within that session.</li>
+    <li>A receiver accepts a session and processes its messages under session ownership.</li>
+    <li>This suits business workflows whose messages must be correlated and processed sequentially.</li>
+  </ul>
+  <div class="note key"><b class="t">Key insight</b>Service-to-service communication does not always need a REST endpoint. Messaging is a good alternative when direct HTTP communication is unavailable or undesirable.</div>
+</section>
+
+<!-- 13 -->
+<section class="topic" id="t13">
+  <h2><span class="num">13</span>BackgroundService in .NET</h2>
+  <p>.NET <code>BackgroundService</code> runs hosted tasks inside an application. It suits long-running work such as consuming messages, processing queued work, and running scheduled or continuous tasks. Depending on the architecture, it can be an alternative to deploying a separate Azure Function.</p>
+  <h3>Potential benefits</h3>
+  <ul>
+    <li>Background processing stays close to the application's existing codebase.</li>
+    <li>Dependency injection, configuration and logging infrastructure can be reused.</li>
+    <li>Deployment is simpler when the application already hosts background workers.</li>
+    <li>You get direct control over worker lifecycle, cancellation and error handling.</li>
+  </ul>
+  <h3>Choosing between them</h3>
+  <div class="compare">
+    <div><h4>Azure Functions</h4>A better fit for event-driven workloads that need managed scaling.</div>
+    <div><h4>Hosted BackgroundService</h4>A good fit for applications that already run continuously.</div>
+  </div>
+  <div class="note key"><b class="t">Lesson</b>Select the architecture based on the workload, not by choosing a technology by default.</div>
+</section>
+
+<!-- 14 -->
+<section class="topic" id="t14">
+  <h2><span class="num">14</span>The biggest lesson: engineering is about the details</h2>
+  <p>The most memorable part of the project was not any single technology. It was the depth of the discussions. Questions like these each revealed another dimension of software engineering:</p>
+  <ul class="qlist">
+    <li>Should a field be mandatory or optional?</li>
+    <li>Should an identifier be a GUID or a string?</li>
+    <li>What happens when a client does not send it?</li>
+    <li>Which status code best represents the outcome?</li>
+    <li>How do we prevent unauthorized callback requests?</li>
+    <li>How should a message be correlated across services?</li>
+    <li>What could break downstream if we change one small part of the contract?</li>
+  </ul>
+  <p>At times the number of considerations can feel overwhelming, and different engineers hold different views on the same decision. What helped was listening carefully, understanding the reasoning behind each viewpoint, and judging decisions against requirements, security, maintainability and system behaviour.</p>
+</section>
+
+<p class="closing">Good software engineering is not just about making something work. It is about making it work correctly, securely, reliably and predictably.</p>
+
+<section class="topic" style="margin-top:28px">
+  <p style="margin:0">REST APIs may look simple on the surface, but production-ready APIs need careful thought across contracts, data modelling, security, communication patterns, observability and operational behaviour. Every small technical discussion has the potential to become a lasting engineering lesson.</p>
+</section>
+</main>
+</div>
+
+<script>
+(function(){
+  // Status code filter
+  var btns=document.querySelectorAll('.filters button'),rows=document.querySelectorAll('#codes tr[data-g]');
+  btns.forEach(function(b){b.addEventListener('click',function(){
+    btns.forEach(function(x){x.setAttribute('aria-pressed',x===b)});
+    var f=b.dataset.f;
+    rows.forEach(function(r){r.style.display=(f==='all'||r.dataset.g===f)?'':'none'});
+  })});
+
+  // Scroll-spy
+  var links=document.querySelectorAll('nav.toc a'),map={};
+  links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a});
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){
+          links.forEach(function(l){l.classList.remove('active')});
+          var a=map[e.target.id]; if(a)a.classList.add('active');
+        }
+      });
+    },{rootMargin:'-20% 0px -70% 0px'});
+    document.querySelectorAll('section.topic[id]').forEach(function(s){io.observe(s)});
+  }
+
+  // Theme toggle
+  var root=document.documentElement;
+  document.getElementById('themeBtn').addEventListener('click',function(){
+    var dark=root.dataset.theme?root.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
+    root.dataset.theme=dark?'light':'dark';
+  });
+})();
+</script>
+</body>
+</html>
